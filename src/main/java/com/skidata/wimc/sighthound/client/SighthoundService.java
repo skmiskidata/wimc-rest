@@ -3,6 +3,7 @@ package com.skidata.wimc.sighthound.client;
 import org.apache.commons.compress.utils.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -16,12 +17,13 @@ import java.net.URL;
 /**
  * Created by skmi on 2. 11. 2017.
  */
+@Component
 public class SighthoundService {
 
     private static final Logger logger = LoggerFactory.getLogger(SighthoundService.class);
 
-    private static final String recognizeUrl = "https://dev.sighthoundapi.com/v1/recognition?objectType=vehicle,licenseplate";
-    private static final String detectUrl = "https://dev.sighthoundapi.com/v1/detections?type=face,person&faceOption=gender,age,emotion,pose";
+    private static final String recognizeUrl = "https://prod.sighthoundapi.com/v1/recognition?objectType=vehicle,licenseplate";
+    private static final String detectUrl = "https://prod.sighthoundapi.com/v1/detections?type=face,person&faceOption=gender,age,emotion,pose";
     private static final String accessToken = "nWE5seUaAixq2VJFshi80m6hFDS4LnU6JZVc";
 
     private byte[] loadImage(URL url) {
@@ -117,7 +119,8 @@ public class SighthoundService {
     // tests
     public static void main(String[] args) throws IOException {
         SighthoundService sighthoundService = new SighthoundService();
-        String imageUrl = "http://172.27.20.183:8080/?action=snapshot";
+        //String imageUrl = "http://172.27.20.183:8080/?action=snapshot";
+        String imageUrl = "http://192.168.1.106:8080/photoaf.jpg";
         sighthoundService.recognize(new URL(imageUrl));
         sighthoundService.detect(new URL(imageUrl));
     }
