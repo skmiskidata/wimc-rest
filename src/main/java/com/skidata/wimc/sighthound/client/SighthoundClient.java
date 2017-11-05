@@ -21,9 +21,9 @@ import java.net.URL;
  */
 @ConfigurationProperties(prefix = "sighthound.client")
 @Component
-public class SighthoundService {
+public class SighthoundClient {
 
-    private static final Logger logger = LoggerFactory.getLogger(SighthoundService.class);
+    private static final Logger logger = LoggerFactory.getLogger(SighthoundClient.class);
 
     private String recognizeUrl;
     private String detectUrl;
@@ -146,12 +146,12 @@ public class SighthoundService {
     }
 
     // tests
-    public static void main(String[] args) throws IOException {
-        SighthoundService sighthoundService = new SighthoundService();
-        //String imageUrl = "http://172.27.20.183:8080/?action=snapshot";
-        String imageUrl = "http://192.168.1.106:8080/photoaf.jpg";
-        sighthoundService.recognize(new URL(imageUrl));
-        sighthoundService.detect(new URL(imageUrl));
-    }
+//    public static void main(String[] args) throws IOException {
+//        SighthoundClient sighthoundService = new SighthoundClient();
+//        //String imageUrl = "http://172.27.20.183:8080/?action=snapshot";
+//        String imageUrl = "http://192.168.1.106:8080/photoaf.jpg";
+//        sighthoundService.recognize(new URL(imageUrl));
+//        sighthoundService.detect(new URL(imageUrl));
+//    }
 
 }

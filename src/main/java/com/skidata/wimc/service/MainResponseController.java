@@ -25,7 +25,7 @@ public class MainResponseController {
 
     @GetMapping("/test")
     public String indexResponse() {
-        return "Ska-rest-service, springboot-appengine-standard, running...";
+        return "wimc-rest-service, springboot-appengine-standard, running...";
     }
 
     @PostMapping(path = "/postAll", consumes = "application/json", produces = "application/json")

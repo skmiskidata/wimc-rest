@@ -1,7 +1,5 @@
 package com.skidata.wimc.domain;
 
-import java.util.UUID;
-
 /**
  * Created by skmi on 31. 10. 2017.
  */
