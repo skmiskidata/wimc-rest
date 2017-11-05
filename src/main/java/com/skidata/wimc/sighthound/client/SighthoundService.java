@@ -3,6 +3,7 @@ package com.skidata.wimc.sighthound.client;
 import org.apache.commons.compress.utils.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
@@ -18,14 +19,15 @@ import java.net.URL;
 /**
  * Created by skmi on 2. 11. 2017.
  */
+@ConfigurationProperties(prefix = "sighthound.client")
 @Component
 public class SighthoundService {
 
     private static final Logger logger = LoggerFactory.getLogger(SighthoundService.class);
 
-    private static final String recognizeUrl = "https://prod.sighthoundapi.com/v1/recognition?objectType=vehicle,licenseplate";
-    private static final String detectUrl = "https://prod.sighthoundapi.com/v1/detections?type=face,person&faceOption=gender,age,emotion,pose";
-    private static final String accessToken = "nWE5seUaAixq2VJFshi80m6hFDS4LnU6JZVc";
+    private String recognizeUrl;
+    private String detectUrl;
+    private String accessToken;
 
     @Async
     private byte[] loadImage(URL url) {
@@ -117,6 +119,30 @@ public class SighthoundService {
         } catch (Exception ex) {
             logger.error("Error at detection ", ex);
         }
+    }
+
+    public String getRecognizeUrl() {
+        return recognizeUrl;
+    }
+
+    public void setRecognizeUrl(String recognizeUrl) {
+        this.recognizeUrl = recognizeUrl;
+    }
+
+    public String getDetectUrl() {
+        return detectUrl;
+    }
+
+    public void setDetectUrl(String detectUrl) {
+        this.detectUrl = detectUrl;
+    }
+
+    public String getAccessToken() {
+        return accessToken;
+    }
+
+    public void setAccessToken(String accessToken) {
+        this.accessToken = accessToken;
     }
 
     // tests

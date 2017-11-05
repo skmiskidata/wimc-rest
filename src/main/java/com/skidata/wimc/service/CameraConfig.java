@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * Created by Mihael on 5.11.2017.
  */
-@ConfigurationProperties(prefix = "local", ignoreUnknownFields = false)
+@ConfigurationProperties(prefix = "local")
 @Component
 public class CameraConfig {
 
