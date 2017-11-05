@@ -3,6 +3,7 @@ package com.skidata.wimc.sighthound.client;
 import org.apache.commons.compress.utils.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import javax.json.Json;
@@ -26,6 +27,7 @@ public class SighthoundService {
     private static final String detectUrl = "https://prod.sighthoundapi.com/v1/detections?type=face,person&faceOption=gender,age,emotion,pose";
     private static final String accessToken = "nWE5seUaAixq2VJFshi80m6hFDS4LnU6JZVc";
 
+    @Async
     private byte[] loadImage(URL url) {
         InputStream is = null;
         byte[] binaryData = null;
@@ -47,6 +49,7 @@ public class SighthoundService {
         return binaryData;
     }
 
+    @Async
     public void recognize(URL url) {
         try {
             byte[] binaryData = loadImage(url);

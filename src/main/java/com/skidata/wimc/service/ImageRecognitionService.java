@@ -21,24 +21,24 @@ public class ImageRecognitionService {
     @Autowired
     private SighthoundService sighthoundService;
 
-    @Scheduled(fixedRate = 1000)
-    public void pollCameraOne() {
-        try {
-            logger.info("Polling Camera 1");
-            sighthoundService.recognize(new URL("http://192.168.1.106:8080/photoaf.jpg"));
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        }
-    }
+    @Autowired
+    private CameraConfig cameraConfig;
 
-    @Scheduled(fixedRate = 1000)
-    public void pollCameraTwo() {
-        try {
-            logger.info("Polling Camera 2");
-            sighthoundService.recognize(new URL("http://192.168.1.107:8080/photoaf.jpg"));
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
+    @Scheduled(fixedDelay = 3000)
+    public void pollCameras() {
+        if (cameraConfig != null && cameraConfig.isSightEnabled()) {
+
+            for (String cameraUrl : cameraConfig.getWebcams()) {
+                try {
+                    logger.info("Polling Camera URL : " + cameraUrl);
+                    sighthoundService.recognize(new URL(cameraUrl));
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                }
+            }
+
         }
+
     }
 
 }

@@ -1,0 +1,5 @@
+local:
+  sightEnabled: false
+  webcams:
+    - http://192.168.1.104:8080/photoaf.jpg
+    - http://192.168.1.103:8080/photoaf.jpg
