@@ -1,14 +1,15 @@
 package com.skidata.wimc.service;
 
-import com.skidata.wimc.sighthound.client.SighthoundClient;
+import com.skidata.wimc.sighthound.client.ISighthoundProcessResult;
+import com.skidata.wimc.sighthound.client.SighthoundProcessorService;
+import com.skidata.wimc.sighthound.client.domain.SightResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import javax.validation.constraints.NotNull;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -24,38 +25,36 @@ public class ImageRecognitionService {
 
     private static final Logger logger = LoggerFactory.getLogger(ImageRecognitionService.class);
 
-    @Autowired
-    private SimpMessagingTemplate template;
-
     @NotNull
     private boolean sightEnabled;
 
     private List<String> webcams = new ArrayList<String>();
 
     @Autowired
-    private SighthoundClient sighthoundService;
+    private SighthoundProcessorService sighthoundProcessorService;
 
-    @Scheduled(fixedDelay = 3000)
+    @PostConstruct
     public void pollCameras() {
         if (isSightEnabled()) {
-
             for (String cameraUrl : getWebcams()) {
                 try {
                     logger.info("Polling Camera URL : " + cameraUrl);
-                    sighthoundService.recognize(new URL(cameraUrl));
+                    sighthoundProcessorService.initializeCameraStream(new URL(cameraUrl), new SightHoundTransformAndProcess());
                 } catch (MalformedURLException e) {
                     e.printStackTrace();
                 }
             }
-
         }
-
     }
 
-    @Scheduled(fixedRate = 5000)
-    public void testStomp() {
-        logger.info("Sending message...");
-        template.convertAndSend("/topic/hello", "Hi message!");
+    private class SightHoundTransformAndProcess implements ISighthoundProcessResult {
+
+        @Override
+        public void processResult(SightResult sightResult) {
+            // TODO transform and post further
+            logger.info("Got object: \n" + sightResult.toString());
+        }
+
     }
 
     public boolean isSightEnabled() {

@@ -1,10 +1,11 @@
 package com.skidata.wimc.sighthound.client;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.skidata.wimc.sighthound.client.domain.SightResult;
 import org.apache.commons.compress.utils.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import javax.json.Json;
@@ -29,7 +30,6 @@ public class SighthoundClient {
     private String detectUrl;
     private String accessToken;
 
-    @Async
     private byte[] loadImage(URL url) {
         InputStream is = null;
         byte[] binaryData = null;
@@ -51,8 +51,8 @@ public class SighthoundClient {
         return binaryData;
     }
 
-    @Async
-    public void recognize(URL url) {
+    public SightResult recognize(URL url) {
+        SightResult result = null;
         try {
             byte[] binaryData = loadImage(url);
             URL apiURL = new URL(recognizeUrl);
@@ -72,6 +72,8 @@ public class SighthoundClient {
                 JsonReader jReader = Json.createReader(connection.getInputStream());
                 JsonObject jsonBody = jReader.readObject();
                 logger.info(jsonBody.toString());
+                ObjectMapper objectMapper = new ObjectMapper();
+                result = objectMapper.readValue(jsonBody.toString(), SightResult.class);
             } else {
                 logger.error("Error code = " + httpCode);
                 JsonReader jReader = Json.createReader(connection.getErrorStream());
@@ -85,8 +87,8 @@ public class SighthoundClient {
         } catch (Exception ex) {
             logger.error("Error at recognition", ex);
         }
+        return result;
     }
-
 
     public void detect(URL url) {
         try {
@@ -144,14 +146,5 @@ public class SighthoundClient {
     public void setAccessToken(String accessToken) {
         this.accessToken = accessToken;
     }
-
-    // tests
-//    public static void main(String[] args) throws IOException {
-//        SighthoundClient sighthoundService = new SighthoundClient();
-//        //String imageUrl = "http://172.27.20.183:8080/?action=snapshot";
-//        String imageUrl = "http://192.168.1.106:8080/photoaf.jpg";
-//        sighthoundService.recognize(new URL(imageUrl));
-//        sighthoundService.detect(new URL(imageUrl));
-//    }
 
 }
