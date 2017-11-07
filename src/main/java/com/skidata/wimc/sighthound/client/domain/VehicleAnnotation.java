@@ -11,6 +11,16 @@ public class VehicleAnnotation {
 
     private Attributes attributes;
 
+    private LicencePlate licenseplate;
+
+    public LicencePlate getLicenseplate() {
+        return licenseplate;
+    }
+
+    public void setLicenseplate(LicencePlate licenseplate) {
+        this.licenseplate = licenseplate;
+    }
+
     public Attributes getAttributes() {
         return attributes;
     }
@@ -41,6 +51,7 @@ public class VehicleAnnotation {
                 "bounding=" + bounding +
                 ", recognitionConfidence=" + recognitionConfidence +
                 ", attributes=" + attributes +
+                ", licenseplate=" + licenseplate +
                 '}';
     }
 }

@@ -51,10 +51,9 @@ public class SighthoundClient {
         return binaryData;
     }
 
-    public SightResult recognize(URL url) {
+    public SightResult recognize(byte[] binaryData) {
         SightResult result = null;
         try {
-            byte[] binaryData = loadImage(url);
             URL apiURL = new URL(recognizeUrl);
             long timeStart = System.currentTimeMillis();
             HttpURLConnection connection = (HttpURLConnection) apiURL.openConnection();
@@ -84,6 +83,16 @@ public class SighthoundClient {
 
             logger.info("Total time for recognition = " + (System.currentTimeMillis() - timeStart) + "ms");
 
+        } catch (Exception ex) {
+            logger.error("Error at recognition", ex);
+        }
+        return result;
+    }
+
+    public SightResult recognize(URL url) {
+        SightResult result = null;
+        try {
+            result = recognize(loadImage(url));
         } catch (Exception ex) {
             logger.error("Error at recognition", ex);
         }
