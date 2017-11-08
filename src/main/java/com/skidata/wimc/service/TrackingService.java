@@ -31,16 +31,16 @@ public class TrackingService {
     public TrackingService () {
         Set<CalibrationValues> cal = new HashSet<>();
         cal.add(new CalibrationValues(new Pixel(82, 325), new Position(300,700), 2, 2));
-        cal.add(new CalibrationValues(new Pixel(82, 364), new Position(300,560), 2, 2));
+        cal.add(new CalibrationValues(new Pixel(82, 364), new Position(300,600), 2, 2));
         cal.add(new CalibrationValues(new Pixel(3, 424), new Position(300,450), 2, 2));
         cal.add(new CalibrationValues(new Pixel(346, 325), new Position(550,700), 2, 2));
-        cal.add(new CalibrationValues(new Pixel(346, 369), new Position(550,560), 2, 2));
+        cal.add(new CalibrationValues(new Pixel(346, 369), new Position(550,600), 2, 2));
         cal.add(new CalibrationValues(new Pixel(253, 443), new Position(550,450), 2, 2));
         cal.add(new CalibrationValues(new Pixel(712, 325), new Position(800,700), 2, 2));
-        cal.add(new CalibrationValues(new Pixel(712, 373), new Position(800,560), 2, 2));
+        cal.add(new CalibrationValues(new Pixel(712, 373), new Position(800,600), 2, 2));
         cal.add(new CalibrationValues(new Pixel(727, 464), new Position(800,450), 2, 2));
         cal.add(new CalibrationValues(new Pixel(1084, 325), new Position(1050,700), 2, 2));
-        cal.add(new CalibrationValues(new Pixel(1084, 385), new Position(1050,560), 2, 2));
+        cal.add(new CalibrationValues(new Pixel(1084, 385), new Position(1050,600), 2, 2));
         cal.add(new CalibrationValues(new Pixel(1176, 471), new Position(1050,450), 2, 2));
 
         brickcom = new Camera("1", new Position(0, 0), cal);
