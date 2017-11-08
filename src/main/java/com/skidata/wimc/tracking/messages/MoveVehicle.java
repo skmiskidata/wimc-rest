@@ -29,4 +29,13 @@ public class MoveVehicle extends Message {
     public int getY() {
         return y;
     }
+
+    @Override
+    public String toString() {
+        return "MoveVehicle{" +
+                "uuid='" + uuid + '\'' +
+                ", x=" + x +
+                ", y=" + y +
+                '}';
+    }
 }

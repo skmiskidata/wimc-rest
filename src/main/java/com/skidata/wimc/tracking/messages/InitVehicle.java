@@ -3,7 +3,7 @@ package com.skidata.wimc.tracking.messages;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonRootName;
 
-@JsonRootName(value = "IniVehicle")
+@JsonRootName(value = "InitVehicle")
 public class InitVehicle extends Message {
     String uuid;
     int x;
@@ -23,33 +23,27 @@ public class InitVehicle extends Message {
     }
 
     @JsonProperty
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
-    }
-
-    @JsonProperty
     public int getX() {
         return x;
     }
 
     @JsonProperty
-    public void setX(int x) {
-        this.x = x;
-    }
-
     public int getY() {
         return y;
     }
 
-    public void setY(int y) {
-        this.y = y;
-    }
-
+    @JsonProperty
     public String getLp() {
         return lp;
     }
 
-    public void setLp(String lp) {
-        this.lp = lp;
+    @Override
+    public String toString() {
+        return "InitVehicle{" +
+                "uuid='" + uuid + '\'' +
+                ", x=" + x +
+                ", y=" + y +
+                ", lp='" + lp + '\'' +
+                '}';
     }
 }

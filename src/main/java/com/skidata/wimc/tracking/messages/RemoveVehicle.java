@@ -15,4 +15,11 @@ public class RemoveVehicle extends Message {
     public String getUuid() {
         return uuid;
     }
+
+    @Override
+    public String toString() {
+        return "RemoveVehicle{" +
+                "uuid='" + uuid + '\'' +
+                '}';
+    }
 }

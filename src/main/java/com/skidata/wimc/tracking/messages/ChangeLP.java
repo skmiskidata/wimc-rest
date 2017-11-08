@@ -22,4 +22,12 @@ public class ChangeLP extends Message {
     public String getLp() {
         return lp;
     }
+
+    @Override
+    public String toString() {
+        return "ChangeLP{" +
+                "uuid='" + uuid + '\'' +
+                ", lp='" + lp + '\'' +
+                '}';
+    }
 }
