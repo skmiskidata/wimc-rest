@@ -103,13 +103,14 @@ function moveVehicle(id, licenseplate, dx, dy) {
     var lp = Snap.select("#lp_"+id);
     if (lp !== undefined && lp !== null) {
         var mainlayer = lp.select('#main_layer');
-        mainlayer.stop().animate({transform: 'T' + calcX(dx) + ',' + calcY(dy)}, 200);
+        mainlayer.stop().animate({transform: 'T' + calcX(dx) + ',' + calcY(dy)}, 200, null, function() {
+            intersectAllSpaces();
+        });
+
     }
     else {
         initVehicle(id, licenseplate, dx, dy);
     }
-
-    intersectAllSpaces();
 }
 
 function removeVehicle(id) {
