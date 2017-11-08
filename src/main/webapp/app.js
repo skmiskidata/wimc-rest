@@ -4,9 +4,8 @@ function connect() {
     var socket = new SockJS('/gs-guide-websocket');
     stompClient = Stomp.over(socket);
     stompClient.connect({}, function (frame) {
-        setConnected(true);
         console.log('Connected: ' + frame);
-        stompClient.subscribe('/topic/lp', function (lpmessage) {
+        stompClient.subscribe('/topic/track', function (lpmessage) {
             console.log(lpmessage.body);
             //showPlate(JSON.parse(lpmessage.body));
         });
@@ -17,7 +16,6 @@ function disconnect() {
     if (stompClient !== null) {
         stompClient.disconnect();
     }
-    setConnected(false);
     console.log("Disconnected");
 }
 
