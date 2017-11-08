@@ -44,7 +44,7 @@ public class MainResponseController {
                 }
             }
         });
-        dummyDataThread.run();
+        dummyDataThread.start();;
     }
 
     @GetMapping("/test")
