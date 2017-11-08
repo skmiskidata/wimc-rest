@@ -24,4 +24,12 @@ public class Tuple<T, V> {
     public void setV2(V v2) {
         this.v2 = v2;
     }
+
+    @Override
+    public String toString() {
+        return "Tuple{" +
+                "v1=" + v1 +
+                ", v2=" + v2 +
+                '}';
+    }
 }

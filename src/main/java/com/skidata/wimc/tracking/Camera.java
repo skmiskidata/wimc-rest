@@ -1,13 +1,15 @@
 package com.skidata.wimc.tracking;
 
-import java.util.Map;
+import com.skidata.wimc.tracking.impl.CalibrationValues;
+
+import java.util.Set;
 
 public class Camera {
     String id;
     Position pos;
-    Map<Pixel, Position> calibration;
+    Set<CalibrationValues> calibration;
 
-    public Camera(String id, Position pos, Map<Pixel, Position> calibration) {
+    public Camera(String id, Position pos, Set<CalibrationValues> calibration) {
         this.id = id;
         this.pos = pos;
         this.calibration = calibration;
@@ -21,7 +23,7 @@ public class Camera {
         return pos;
     }
 
-    public Map<Pixel, Position> getCalibration() {
+    public Set<CalibrationValues> getCalibration() {
         return calibration;
     }
 }
