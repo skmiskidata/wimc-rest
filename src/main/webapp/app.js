@@ -139,7 +139,10 @@ function intersectAllSpaces() {
 
         $.each(licenseplateIds, function(j, lpId) {
             var lp = Snap.select("#lp_"+lpId);
-            intersect = intersectRect(space, lp);
+            var result = intersectRect(space, lp);
+            if (!intersect && result) {
+                intersect = true;
+            }
         });
         setSpaceOccupancy(spaceId, intersect);
     });
