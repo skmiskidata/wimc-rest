@@ -2,6 +2,7 @@ var VIEWBOX_X = 3840;
 var VIEWBOX_Y = 2160;
 var SAMPLE_X = 1600;
 var SAMPLE_Y = 900;
+var OFFSET_X = 180;
 
 var stompClient = null;
 
@@ -37,11 +38,11 @@ function disconnect() {
 }
 
 function calcX(x) {
-    return x / SAMPLE_X * VIEWBOX_X;
+    return (x / SAMPLE_X * VIEWBOX_X) - OFFSET_X;
 }
 
 function calcY(y) {
-    return y / SAMPLE_Y * VIEWBOX_Y;
+    return VIEWBOX_Y - (y / SAMPLE_Y * VIEWBOX_Y);
 }
 
 function initVehicle(id, licenseplate, dx, dy) {
