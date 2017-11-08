@@ -4,7 +4,20 @@ var SAMPLE_X = 1600;
 var SAMPLE_Y = 900;
 var OFFSET_X = 180;
 
+var licenseplateIds = [];
+
 var stompClient = null;
+
+function addPlateId(id) {
+    licenseplateIds.push(id);
+}
+
+function removePlateId(id) {
+    var index = licenseplateIds.indexOf(id);
+    if (index > -1) {
+        licenseplateIds.splice(index, 1);
+    }
+}
 
 function connect() {
     var socket = new SockJS('/gs-guide-websocket');
@@ -79,6 +92,9 @@ function initVehicle(id, licenseplate, dx, dy) {
                 }
             });
         defer.resolve(lp);
+
+        addPlateId(id);
+        intersectAllSpaces();
     });
     return defer.promise();
 }
@@ -92,11 +108,49 @@ function moveVehicle(id, licenseplate, dx, dy) {
     else {
         initVehicle(id, licenseplate, dx, dy);
     }
+
+    intersectAllSpaces();
 }
 
 function removeVehicle(id) {
     var lp = Snap.select("#lp_"+id);
     if (lp !== undefined && lp !== null) {
         lp.remove();
+        removePlateId(id);
+        intersectAllSpaces();
     }
+}
+
+function setSpaceOccupancy(id, occupied) {
+    var light = Snap.select("#Light_"+id);
+    if (occupied) {
+        light.attr('fill', 'darkred');
+    }
+    else {
+        light.attr('fill', '#009640');
+    }
+}
+
+function intersectAllSpaces() {
+    var allSpaces = ['A1','A2','A3','A4','A5','A6'];
+    $.each(allSpaces, function(i, spaceId) {
+        var intersect = false;
+        var space = Snap.select("#Parking_space_"+spaceId);
+
+        $.each(licenseplateIds, function(j, lpId) {
+            var lp = Snap.select("#lp_"+lpId);
+            intersect = intersectRect(space, lp);
+        });
+        setSpaceOccupancy(spaceId, intersect);
+    });
+}
+
+function intersectRect(r1, r2) {
+    var r1 = r1.node.getBoundingClientRect();
+    var r2 = r2.node.getBoundingClientRect();
+
+    return !(r2.left > r1.right ||
+        r2.right < r1.left ||
+        r2.top > r1.bottom ||
+        r2.bottom < r1.top);
 }
