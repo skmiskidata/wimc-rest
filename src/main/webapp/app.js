@@ -1,3 +1,8 @@
+var VIEWBOX_X = 3840;
+var VIEWBOX_Y = 2160;
+var SAMPLE_X = 1600;
+var SAMPLE_Y = 900;
+
 var stompClient = null;
 
 function connect() {
@@ -6,8 +11,20 @@ function connect() {
     stompClient.connect({}, function (frame) {
         console.log('Connected: ' + frame);
         stompClient.subscribe('/topic/track', function (lpmessage) {
-            console.log(lpmessage.body);
-            //showPlate(JSON.parse(lpmessage.body));
+            var event = JSON.parse(lpmessage.body);
+            if (event.hasOwnProperty('InitVehicle')) {
+                var data = event['InitVehicle'];
+                initVehicle(data.uuid, data.lp, data.x, data.y);
+            }
+            else if (event.hasOwnProperty("MoveVehicle")) {
+                var data = event['MoveVehicle'];
+                moveVehicle(data.uuid, data.x, data.y);
+            }
+            else if (event.hasOwnProperty("RemoveVehicle")) {
+                var data = event['RemoveVehicle'];
+                removeVehicle(data.uuid);
+            }
+            console.log(event);
         });
     });
 }
@@ -19,7 +36,15 @@ function disconnect() {
     console.log("Disconnected");
 }
 
-function initVehicle(id, licenseplate) {
+function calcX(x) {
+    return x / SAMPLE_X * VIEWBOX_X;
+}
+
+function calcY(y) {
+    return y / SAMPLE_Y * VIEWBOX_Y;
+}
+
+function initVehicle(id, licenseplate, dx, dy) {
     var defer = $.Deferred();
     var container = Snap("#carpark");
     Snap.load("asset/plate.svg", function(lp) {
@@ -31,6 +56,7 @@ function initVehicle(id, licenseplate) {
         lpelem.node.innerHTML = licenseplate;
 
         var mainlayer = lp.select('#main_layer');
+        mainlayer.stop().animate({transform: 'T' + calcX(dx) + ',' + calcY(dy)}, 0);
         container.append(lp);
 
         mainlayer.hover(function() {
@@ -58,6 +84,18 @@ function initVehicle(id, licenseplate) {
 
 function moveVehicle(id, dx, dy) {
     var lp = Snap.select("#lp_"+id);
-    var mainlayer = lp.select('#main_layer');
-    mainlayer.stop().animate({ transform: 'T'+dx+','+dy }, 200);
+    if (lp !== undefined && lp !== null) {
+        var mainlayer = lp.select('#main_layer');
+        mainlayer.stop().animate({transform: 'T' + calcX(dx) + ',' + calcY(dy)}, 200);
+    }
+    else {
+        console.log('Id not found: ', id, ' ... ignored!');
+    }
+}
+
+function removeVehicle(id) {
+    var lp = Snap.select("#lp_"+id);
+    if (lp !== undefined && lp !== null) {
+        lp.remove();
+    }
 }
