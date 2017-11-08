@@ -63,7 +63,7 @@ public class MainResponseController {
             sb.append(" LP: ").append(licencePlate.getPlate()).append(" XY: ");
             toString(sb, licencePlate.getPlateCoordinates());
         }
-        //logger.info("camId=" + result.getCameraId() + " result = " + sb.toString());
+        logger.info("in camId=" + result.getCameraId() + " result = " + sb.toString());
 
         List<Message> msgs = trackingService.mapToRealWorld(result);
         for (Message m : msgs) {

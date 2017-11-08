@@ -4,10 +4,12 @@ import com.skidata.wimc.tracking.Camera;
 import com.skidata.wimc.tracking.Pixel;
 import com.skidata.wimc.tracking.Position;
 import com.skidata.wimc.tracking.PositionMapper;
-
-import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class LinearPositionMapper implements PositionMapper {
+
+    private static final Logger logger = LoggerFactory.getLogger(LinearPositionMapper.class);
 
     @Override
     public Position mapPixelToRealWorld(Camera c, Pixel p) {
@@ -21,6 +23,7 @@ public class LinearPositionMapper implements PositionMapper {
     }
 
     private int interpolate(int px1, int pos1, int px2, int pos2, int px) {
+        logger.info("using for interpolation pixel1={} pos1={} pixel2={} pos2={} px={}", px1, pos1, px2, pos2, px);
         if (px1 == px2)
             return pos1;
 
@@ -51,44 +54,45 @@ public class LinearPositionMapper implements PositionMapper {
         Tuple yres = new Tuple<>(
                 new Tuple<>(Integer.MIN_VALUE, new Position(0, 0)),
                 new Tuple<>(Integer.MAX_VALUE, new Position(0, 0)));
-        for (Map.Entry<Pixel, Position> e : c.getCalibration().entrySet()) {
-            int ex = e.getKey().getX();
+        for (CalibrationValues e : c.getCalibration()) {
+            int ex = e.pixel.getX();
             if (ex < smallestX) {
                 smallestX = ex;
-                smallestXPos = e.getValue();
+                smallestXPos = e.pos;
             }
             if (biggestX < ex) {
                 biggestX = ex;
-                biggestXPos = e.getValue();
+                biggestXPos = e.pos;
             }
             if (ex <= p.getX() && bestX1 < ex ) {
                 bestX1 = ex;
                 ((Tuple<Integer, Position>)xres.getV1()).setV1(bestX1);
-                ((Tuple<Integer, Position>)xres.getV1()).setV2(e.getValue());
+                ((Tuple<Integer, Position>)xres.getV1()).setV2(e.pos);
             }
             if (p.getX() <= ex &&  ex < bestX2) {
                 bestX2 = ex;
                 ((Tuple<Integer, Position>)xres.getV2()).setV1(bestX2);
-                ((Tuple<Integer, Position>)xres.getV2()).setV2(e.getValue());
+                ((Tuple<Integer, Position>)xres.getV2()).setV2(e.pos);
             }
-            int ey = e.getKey().getX();
+
+            int ey = e.pixel.getY();
             if (ey < smallestY) {
                 smallestY = ey;
-                smallestYPos = e.getValue();
+                smallestYPos = e.pos;
             }
             if (biggestY < ey) {
                 biggestY = ey;
-                biggestYPos = e.getValue();
+                biggestYPos = e.pos;
             }
             if (ey <= p.getY() && bestY1 < ey ) {
                 bestY1 = ey;
                 ((Tuple<Integer, Position>)yres.getV1()).setV1(bestY1);
-                ((Tuple<Integer, Position>)yres.getV1()).setV2(e.getValue());
+                ((Tuple<Integer, Position>)yres.getV1()).setV2(e.pos);
             }
             if (p.getY() <= ey &&  ey < bestY2) {
                 bestY2 = ey;
                 ((Tuple<Integer, Position>)yres.getV2()).setV1(bestY2);
-                ((Tuple<Integer, Position>)yres.getV2()).setV2(e.getValue());
+                ((Tuple<Integer, Position>)yres.getV2()).setV2(e.pos);
             }
         }
 
@@ -109,6 +113,8 @@ public class LinearPositionMapper implements PositionMapper {
             yres.setV2(new Tuple<Integer, Position>(biggestY, biggestYPos));
         }
 
+//        logger.info("returning xres {}", xres);
+//        logger.info("returning yres {}", yres);
         return new Tuple<>(xres, yres);
     }
 }
