@@ -60,8 +60,8 @@ public class TrackingService {
             long w = lp.getPlateCoordinates()[1].getX() - lp.getPlateCoordinates()[0].getX();
             long h = lp.getPlateCoordinates()[2].getY() - lp.getPlateCoordinates()[1].getY();
 
-            logger.info("lp={}, conf={}, lpw={}, lph={}, lparea={}", lp.getPlate(), lp.getConfidence(), w, h, w*h);
-            if (lp.getConfidence() >= 80) {
+            //logger.info("lp={}, conf={}, lpw={}, lph={}, lparea={}", lp.getPlate(), lp.getConfidence(), w, h, w*h);
+            if (lp.getConfidence() >= 89) {
                 int x=0;
                 int y=0;
                 for (PlateCoordinate c : lp.getPlateCoordinates()) {
