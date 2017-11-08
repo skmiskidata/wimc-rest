@@ -4,6 +4,8 @@ import com.skidata.wimc.domain.AlprResult;
 import com.skidata.wimc.domain.CarPosition;
 import com.skidata.wimc.domain.LicencePlate;
 import com.skidata.wimc.domain.PlateCoordinate;
+import com.skidata.wimc.tracking.impl.DummyCarDataGenerator;
+import com.skidata.wimc.tracking.messages.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,9 +21,31 @@ import java.util.UUID;
 public class MainResponseController {
 
     private static final Logger logger = LoggerFactory.getLogger(MainResponseController.class);
+    private static Thread dummyDataThread;
 
     @Autowired
     private SimpMessagingTemplate template;
+
+    public MainResponseController(SimpMessagingTemplate template) {
+        this.template = template;
+        dummyDataThread = new Thread(new Runnable() {
+            private DummyCarDataGenerator gen = new DummyCarDataGenerator();
+            @Override
+            public void run() {
+                while (true) {
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                    Message m = gen.next();
+                    logger.info("sending message " + m);
+                    template.convertAndSend("/topic/track", gen.next());
+                }
+            }
+        });
+        dummyDataThread.run();
+    }
 
     @GetMapping("/test")
     public String indexResponse() {

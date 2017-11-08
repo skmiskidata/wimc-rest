@@ -8,6 +8,7 @@ import java.util.List;
 
 @JsonRootName(value = "Car")
 public class Car {
+    String uuid;
     List<LicencePlate> candidateLPs;
     Position ll;
     Position ur;
@@ -25,5 +26,14 @@ public class Car {
     @JsonProperty
     public Position getUr() {
         return ur;
+    }
+
+    @JsonProperty
+    public String getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
     }
 }

@@ -3,11 +3,12 @@ package com.skidata.wimc.tracking;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonRootName;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @JsonRootName(value = "CarPark")
 public class CarPark {
-    List<Slot> slots;
+    List<Slot> slots = new ArrayList<>();
 
     public CarPark() {
         slots.add(new Slot("A1", new Position(300, 560), new Position(550,900)));
