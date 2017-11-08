@@ -18,7 +18,7 @@ function connect() {
             }
             else if (event.hasOwnProperty("MoveVehicle")) {
                 var data = event['MoveVehicle'];
-                moveVehicle(data.uuid, data.x, data.y);
+                moveVehicle(data.uuid, data.lp, data.x, data.y);
             }
             else if (event.hasOwnProperty("RemoveVehicle")) {
                 var data = event['RemoveVehicle'];
@@ -82,14 +82,14 @@ function initVehicle(id, licenseplate, dx, dy) {
     return defer.promise();
 }
 
-function moveVehicle(id, dx, dy) {
+function moveVehicle(id, licenseplate, dx, dy) {
     var lp = Snap.select("#lp_"+id);
     if (lp !== undefined && lp !== null) {
         var mainlayer = lp.select('#main_layer');
         mainlayer.stop().animate({transform: 'T' + calcX(dx) + ',' + calcY(dy)}, 200);
     }
     else {
-        console.log('Id not found: ', id, ' ... ignored!');
+        initVehicle(id, licenseplate, dx, dy);
     }
 }
 
