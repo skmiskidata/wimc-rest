@@ -48,8 +48,7 @@ public class TrackingService {
         List<Message> msg = new ArrayList<>();
 
         for (LicencePlate lp : alpr.getResults()) {
-            if (lp.getConfidence() >= 85) {
-                logger.info("lp="+lp.getPlate());
+            if (lp.getConfidence() >= 88) {
                 int x=0;
                 int y=0;
                 for (PlateCoordinate c : lp.getPlateCoordinates()) {
@@ -58,6 +57,7 @@ public class TrackingService {
                 }
 
                 Position pos = mapper.mapPixelToRealWorld(brickcom, new Pixel(x/4, y/4));
+                logger.info("lp={}, conf={}, pos={}", lp.getPlate(), lp.getConfidence(), pos);
 
                 addMsg(msg, lp.getPlate(), pos);
             }
