@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -25,6 +26,9 @@ public class MainResponseController {
 
     @Autowired
     private SimpMessagingTemplate template;
+
+    @Autowired
+    TrackingService trackingService;
 
     public MainResponseController(SimpMessagingTemplate template) {
         this.template = template;
@@ -44,7 +48,7 @@ public class MainResponseController {
                 }
             }
         });
-        dummyDataThread.start();;
+        //dummyDataThread.start();;
     }
 
     @GetMapping("/test")
@@ -59,13 +63,12 @@ public class MainResponseController {
             sb.append(" LP: ").append(licencePlate.getPlate()).append(" XY: ");
             toString(sb, licencePlate.getPlateCoordinates());
         }
-        logger.info("result = " + sb.toString());
+        //logger.info("camId=" + result.getCameraId() + " result = " + sb.toString());
 
-        for (LicencePlate licencePlate : result.getResults()) {
-            if (licencePlate.getConfidence() > 88) {
-                CarPosition carPosition = mapCarPosition(licencePlate);
-                sendOut(carPosition);
-            }
+        List<Message> msgs = trackingService.mapToRealWorld(result);
+        for (Message m : msgs) {
+            logger.info("Sending {}", m);
+            template.convertAndSend("/topic/track", m);
         }
 
     }
