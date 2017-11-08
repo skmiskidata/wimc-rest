@@ -35,7 +35,7 @@ public class DummyCar {
             if (y >= 600 || y <= 300) {
                 yInc = -1 * yInc;
             }
-            return new MoveVehicle(uuid, x, y);
+            return new MoveVehicle(uuid, x, y, lp);
         }
         else {
             x = initX;

@@ -1,3 +1,9 @@
+html, body {
+    height: 100%;
+}
 body {
-    background: #9d9d9c;
+    background: #d5d7d8;
+}
+div#carpark_container {
+    text-align: center;
 }

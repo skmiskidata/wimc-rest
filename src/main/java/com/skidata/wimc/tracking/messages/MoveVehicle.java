@@ -8,11 +8,13 @@ public class MoveVehicle extends Message {
     String uuid;
     int x;
     int y;
+    String lp;
 
-    public MoveVehicle(String uuid, int x, int y) {
+    public MoveVehicle(String uuid, int x, int y, String lp) {
         this.uuid = uuid;
         this.x = x;
         this.y = y;
+        this.lp = lp;
     }
 
     @JsonProperty
@@ -30,12 +32,18 @@ public class MoveVehicle extends Message {
         return y;
     }
 
+    @JsonProperty
+    public String getLp() {
+        return lp;
+    }
+
     @Override
     public String toString() {
         return "MoveVehicle{" +
                 "uuid='" + uuid + '\'' +
                 ", x=" + x +
                 ", y=" + y +
+                ", lp='" + lp + '\'' +
                 '}';
     }
 }

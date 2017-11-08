@@ -79,7 +79,7 @@ public class TrackingService {
         }
         else {
             if (!oldPos.equals(newPos)) {
-                msg.add(new MoveVehicle(uuid,  newPos.getX(), newPos.getY()));
+                msg.add(new MoveVehicle(uuid,  newPos.getX(), newPos.getY(), plate));
             }
 
         }
