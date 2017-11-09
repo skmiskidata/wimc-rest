@@ -28,7 +28,6 @@ public class TrackingService {
     private Map<String, String> plateToUUID = new ConcurrentHashMap<>();
 
     private Map<String, String> bestPlateToUUID = new ConcurrentHashMap<>();
-    //private Map<String, Long> lastSeenAt = new ConcurrentHashMap<>();
 
     private Map<String, Camera> cameras = new ConcurrentHashMap<>();
 
@@ -120,7 +119,7 @@ public class TrackingService {
             boolean recalculate = false;
             // remove all old licence plate recognitions
             for (String cameraId : uniqueCar.getLastSeenAtPerCamera().keySet()) {
-                if ((systemTime - uniqueCar.getLastSeenAtPerCamera().get(cameraId)) > 1500) {
+                if ((systemTime - uniqueCar.getLastSeenAtPerCamera().get(cameraId)) > 1800) {
                     uniqueCar.getLastSeenAtPerCamera().remove(cameraId);
                     uniqueCar.getPositionPerCamera().remove(cameraId);
                     recalculate = true;
@@ -129,7 +128,8 @@ public class TrackingService {
 
             if (recalculate) {
                 Position oldBestPosition = uniqueCar.getBestPosition();
-                Position newBestPosition = calculateCentroid(uniqueCar.getPositionPerCamera().values().toArray(new Position[0]));
+                int size = uniqueCar.getPositionPerCamera().values().size();
+                Position newBestPosition = calculateCentroid(uniqueCar.getPositionPerCamera().values().toArray(new Position[size]));
 
                 if (newBestPosition == null) {
                     uniqueCars.remove(uuid);
@@ -168,7 +168,7 @@ public class TrackingService {
                     Position pos = mapper.mapPixelToRealWorld(new MappingContext(camera, w, h1, h2, lp.getPlate()), pix);
                     logger.info("lp={}, conf={}, px=({},{}) pos={} camera={}", lp.getPlate(), lp.getConfidence(), pix.getX(), pix.getY(), pos, camera.getId());
 
-                    addMsg(msg, lp.getPlate(), pos, lp.getConfidence() >= 94, camera.getId());
+                    addMsg(msg, lp.getPlate(), pos, lp.getConfidence() >= 95, camera.getId());
                 }
             }
 
@@ -240,7 +240,8 @@ public class TrackingService {
             uniqueCar.getLastSeenAtPerCamera().put(cameraId, System.currentTimeMillis());
 
             Position oldBestPosition = uniqueCar.getBestPosition();
-            Position newBestPosition = calculateCentroid(uniqueCar.getPositionPerCamera().values().toArray(new Position[0]));
+            int size = uniqueCar.getPositionPerCamera().values().size();
+            Position newBestPosition = calculateCentroid(uniqueCar.getPositionPerCamera().values().toArray(new Position[size]));
 
             if (!oldBestPosition.equals(newBestPosition)) {
                 uniqueCar.setBestPosition(newBestPosition);
@@ -249,7 +250,6 @@ public class TrackingService {
 
         }
     }
-
 
     public Position calculateCentroid(Position[] positions) {
         if (positions.length == 0) {
@@ -265,4 +265,5 @@ public class TrackingService {
         }
         return new Position(sumofx / positions.length, sumofy / positions.length);
     }
+
 }
