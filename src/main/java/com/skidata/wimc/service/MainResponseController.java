@@ -71,6 +71,7 @@ public class MainResponseController {
                     for (LicencePlate licencePlate : result.getResults()) {
                         sb.append(" LP: ").append(licencePlate.getPlate()).append(" XY: ");
                         toString(sb, licencePlate.getPlateCoordinates());
+                        sb.append(" conf: ").append(licencePlate.getConfidence());
                     }
                     logger.info("in camId=" + result.getCameraId() + " result = " + sb.toString());
 
@@ -82,6 +83,10 @@ public class MainResponseController {
                 }
             }
             if (result.getDataType().equalsIgnoreCase("alpr_group")) {
+                StringBuffer sb = new StringBuffer();
+                sb.append(" LP: ").append(result.getBestPlate()).append(" XY: ");
+                toString(sb, result.getBestPlate().getPlateCoordinates());
+                sb.append(" conf: ").append(result.getBestPlate().getConfidence());
                 List<Message> msgs = trackingService.mapToRealWorld(result);
                 for (Message m : msgs) {
                     logger.info("Sending {}", m);
