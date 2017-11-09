@@ -9,8 +9,9 @@ public class MoveVehicle extends Message {
     int x;
     int y;
     String lp;
+    String color;
 
-    public MoveVehicle(String uuid, int x, int y, String lp) {
+    public MoveVehicle(String uuid, int x, int y, String lp, String Color) {
         this.uuid = uuid;
         this.x = x;
         this.y = y;
@@ -37,6 +38,15 @@ public class MoveVehicle extends Message {
         return lp;
     }
 
+    @JsonProperty
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
+    }
+
     @Override
     public String toString() {
         return "MoveVehicle{" +
@@ -44,6 +54,7 @@ public class MoveVehicle extends Message {
                 ", x=" + x +
                 ", y=" + y +
                 ", lp='" + lp + '\'' +
+                ", color='" + color + '\'' +
                 '}';
     }
 }

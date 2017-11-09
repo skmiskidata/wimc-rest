@@ -9,8 +9,9 @@ public class InitVehicle extends Message {
     int x;
     int y;
     String lp;
+    String color;
 
-    public InitVehicle(String uuid, int x, int y, String lp) {
+    public InitVehicle(String uuid, int x, int y, String lp, String color) {
         this.uuid = uuid;
         this.x = x;
         this.y = y;
@@ -37,6 +38,31 @@ public class InitVehicle extends Message {
         return lp;
     }
 
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
+    }
+
+    public void setX(int x) {
+        this.x = x;
+    }
+
+    public void setY(int y) {
+        this.y = y;
+    }
+
+    public void setLp(String lp) {
+        this.lp = lp;
+    }
+
+    @JsonProperty
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
+    }
+
     @Override
     public String toString() {
         return "InitVehicle{" +
@@ -44,6 +70,7 @@ public class InitVehicle extends Message {
                 ", x=" + x +
                 ", y=" + y +
                 ", lp='" + lp + '\'' +
+                ", color='" + color + '\'' +
                 '}';
     }
 }

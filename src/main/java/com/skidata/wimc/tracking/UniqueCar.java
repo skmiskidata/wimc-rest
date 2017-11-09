@@ -16,6 +16,12 @@ public class UniqueCar {
 
     private Map<String, Long> lastSeenAtPerCamera = new ConcurrentHashMap<>();
 
+    private String bestColor;
+
+    private Float bestColorConfidence;
+
+    private Float lastBestLPConfidence;
+
     private Position bestPosition = null;
 
     public String getUuid() {
@@ -56,5 +62,29 @@ public class UniqueCar {
 
     public void setLastSeenAtPerCamera(Map<String, Long> lastSeenAtPerCamera) {
         this.lastSeenAtPerCamera = lastSeenAtPerCamera;
+    }
+
+    public String getBestColor() {
+        return bestColor;
+    }
+
+    public void setBestColor(String bestColor) {
+        this.bestColor = bestColor;
+    }
+
+    public Float getBestColorConfidence() {
+        return bestColorConfidence;
+    }
+
+    public void setBestColorConfidence(Float bestColorConfidence) {
+        this.bestColorConfidence = bestColorConfidence;
+    }
+
+    public Float getLastBestLPConfidence() {
+        return lastBestLPConfidence;
+    }
+
+    public void setLastBestLPConfidence(Float lastBestLPConfidence) {
+        this.lastBestLPConfidence = lastBestLPConfidence;
     }
 }

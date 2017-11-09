@@ -4,7 +4,7 @@ import com.skidata.wimc.tracking.messages.Message;
 
 public class DummyCarDataGenerator {
 
-    DummyCar car = new DummyCar("ABC123", 300, 450);
+    DummyCar car = new DummyCar("ABC123", 300, 450, "red");
 
     public Message next() {
         return car.nextMsg();
