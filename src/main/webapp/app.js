@@ -120,8 +120,8 @@ function initVehicle(id, licenseplate, dx, dy, color) {
         lpelem.node.innerHTML = licenseplate;
 
         if (color !== null) {
-            var color = lp.select('#vehicle_color');
-            color.attr('fill', color);
+            var vehiclecolor = lp.select('#vehicle_color');
+            vehiclecolor.attr('fill', color);
         }
 
         var mainlayer = lp.select('#main_layer');
@@ -162,8 +162,8 @@ function moveVehicle(id, licenseplate, dx, dy, color) {
     if (blockAnim === false) {
         if (lp !== undefined && lp !== null) {
             if (color !== null) {
-                var color = lp.select('#vehicle_color');
-                color.attr('fill', color);
+                var vehiclecolor = lp.select('#vehicle_color');
+                vehiclecolor.attr('fill', color);
             }
             var mainlayer = lp.select('#main_layer');
             mainlayer.stop().animate({transform: 'T' + calcX(dx) + ',' + calcY(dy)}, 200, null, function () {
