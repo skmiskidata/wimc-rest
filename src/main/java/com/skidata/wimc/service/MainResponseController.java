@@ -94,11 +94,13 @@ public class MainResponseController {
     }
 
 
-    @Scheduled(fixedDelay = 3000)
+    @Scheduled(fixedDelay = 300)
     public void checkForMissingLicencePlates() {
-        logger.info("Checking for vanished");
+        //logger.info("Checking for vanished");
         List<Message> msgs = trackingService.checkForVanished();
-        logger.info("removing " + msgs.size() + " cars");
+        if (msgs.size() > 0) {
+            logger.info("removing " + msgs.size() + " cars");
+        }
         for (Message m : msgs) {
             logger.info("Sending car removal {}", m);
             template.convertAndSend("/topic/track", m);

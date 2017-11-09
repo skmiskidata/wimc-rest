@@ -4,7 +4,10 @@ import com.skidata.wimc.domain.AlprResult;
 import com.skidata.wimc.domain.LicencePlate;
 import com.skidata.wimc.domain.PlateCoordinate;
 import com.skidata.wimc.tracking.*;
-import com.skidata.wimc.tracking.impl.*;
+import com.skidata.wimc.tracking.impl.CalibrationLPArea2Dist;
+import com.skidata.wimc.tracking.impl.CalibrationPixel2Pos;
+import com.skidata.wimc.tracking.impl.LinearPositionMapper;
+import com.skidata.wimc.tracking.impl.MappingContext;
 import com.skidata.wimc.tracking.messages.InitVehicle;
 import com.skidata.wimc.tracking.messages.Message;
 import com.skidata.wimc.tracking.messages.MoveVehicle;
@@ -23,29 +26,30 @@ public class TrackingService {
     private static final Logger logger = LoggerFactory.getLogger(MainResponseController.class);
 
     private Map<String, String> plateToUUID = new ConcurrentHashMap<>();
-    private Map<String, Position> uuidToPos = new ConcurrentHashMap<>();
 
     private Map<String, String> bestPlateToUUID = new ConcurrentHashMap<>();
-    private Map<String, Long> lastSeenAt = new ConcurrentHashMap<>();
+    //private Map<String, Long> lastSeenAt = new ConcurrentHashMap<>();
 
     private Map<String, Camera> cameras = new ConcurrentHashMap<>();
 
+    private Map<String, UniqueCar> uniqueCars = new ConcurrentHashMap<>();
+
     private final PositionMapper mapper;
 
-    public TrackingService () {
+    public TrackingService() {
         Set<CalibrationPixel2Pos> pixel2pos = new HashSet<>();
-        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(82, 325), new Position(300,700)));
-        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(82, 364), new Position(300,600)));
-        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(3, 424), new Position(300,450)));
-        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(346, 325), new Position(550,700)));
-        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(346, 369), new Position(550,600)));
-        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(253, 443), new Position(550,450)));
-        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(712, 325), new Position(800,700)));
-        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(712, 373), new Position(800,600)));
-        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(727, 464), new Position(800,450)));
-        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(1084, 325), new Position(1050,700)));
-        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(1084, 385), new Position(1050,600)));
-        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(1176, 471), new Position(1050,450)));
+        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(82, 325), new Position(300, 700)));
+        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(82, 364), new Position(300, 600)));
+        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(3, 424), new Position(300, 450)));
+        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(346, 325), new Position(550, 700)));
+        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(346, 369), new Position(550, 600)));
+        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(253, 443), new Position(550, 450)));
+        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(712, 325), new Position(800, 700)));
+        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(712, 373), new Position(800, 600)));
+        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(727, 464), new Position(800, 450)));
+        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(1084, 325), new Position(1050, 700)));
+        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(1084, 385), new Position(1050, 600)));
+        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(1176, 471), new Position(1050, 450)));
 
         List<CalibrationLPArea2Dist> area2Dists = new ArrayList<>();
         area2Dists.add(new CalibrationLPArea2Dist(5820, 340));
@@ -59,6 +63,13 @@ public class TrackingService {
         newCam = new Camera("2103694419", new Position(0, 0), pixel2pos, area2Dists, 90.0);
         cameras.put(newCam.getId(), newCam);
 
+        newCam = new Camera("604916464", new Position(0, 0), pixel2pos, area2Dists, 90.0);
+        cameras.put(newCam.getId(), newCam);
+
+        newCam = new Camera("899804908", new Position(0, 0), pixel2pos, area2Dists, 90.0);
+        cameras.put(newCam.getId(), newCam);
+
+
         mapper = new LinearPositionMapper();
     }
 
@@ -70,15 +81,35 @@ public class TrackingService {
     public List<Message> checkForVanished() {
         List<Message> msg = new ArrayList<>();
         long systemTime = System.currentTimeMillis();
-        for (String plate : plateToUUID.keySet()) {
-            if (!lastSeenAt.containsKey(plate) || (systemTime - lastSeenAt.get(plate) > 3000)) {
-                // we do remove
-                String uuid = plateToUUID.get(plate);
-                lastSeenAt.remove(plate);
-                bestPlateToUUID.remove(plate);
-                plateToUUID.remove(plate);
-                msg.add(new RemoveVehicle(uuid));
+        for (String uuid : uniqueCars.keySet()) {
+
+            UniqueCar uniqueCar = uniqueCars.get(uuid);
+
+            boolean recalculate = false;
+            // remove all old licence plate recognitions
+            for (String cameraId : uniqueCar.getLastSeenAtPerCamera().keySet()) {
+                if ((systemTime - uniqueCar.getLastSeenAtPerCamera().get(cameraId)) > 1500) {
+                    uniqueCar.getLastSeenAtPerCamera().remove(cameraId);
+                    uniqueCar.getPositionPerCamera().remove(cameraId);
+                    recalculate = true;
+                }
             }
+
+            if (recalculate) {
+                Position oldBestPosition = uniqueCar.getBestPosition();
+                Position newBestPosition = calculateCentroid(uniqueCar.getPositionPerCamera().values().toArray(new Position[0]));
+
+                if (newBestPosition == null) {
+                    uniqueCars.remove(uuid);
+                    bestPlateToUUID.remove(uniqueCar.getPlate());
+                    plateToUUID.remove(uniqueCar.getPlate());
+                    msg.add(new RemoveVehicle(uuid));
+                } else if (!oldBestPosition.equals(newBestPosition)) {
+                    uniqueCar.setBestPosition(newBestPosition);
+                    msg.add(new MoveVehicle(uuid, newBestPosition.getX(), newBestPosition.getY(), uniqueCar.getPlate()));
+                }
+            }
+
         }
         return msg;
     }
@@ -101,9 +132,9 @@ public class TrackingService {
                 long h2 = Math.abs(lp.getPlateCoordinates()[3].getY() - lp.getPlateCoordinates()[0].getY());
 
                 //logger.info("lp={}, conf={}, lpw={}, lph={}, lparea={}", lp.getPlate(), lp.getConfidence(), w, h, w*h);
-                if (lp.getConfidence() >= 94 || (bestPlateToUUID.get(lp.getPlate()) != null)) {
+                if (lp.getConfidence() >= 95 || (bestPlateToUUID.get(lp.getPlate()) != null)) {
 
-                    lastSeenAt.put(lp.getPlate(), System.currentTimeMillis());
+                    //lastSeenAt.put(lp.getPlate(), System.currentTimeMillis());
 
                     int x = 0;
                     int y = 0;
@@ -112,10 +143,10 @@ public class TrackingService {
                         y = (int) (y + c.getY());
                     }
 
-                    Position pos = mapper.mapPixelToRealWorld(new MappingContext(camera,  w, h1, h2, lp.getPlate()), new Pixel(x / 4, y / 4));
+                    Position pos = mapper.mapPixelToRealWorld(new MappingContext(camera, w, h1, h2, lp.getPlate()), new Pixel(x / 4, y / 4));
                     logger.info("lp={}, conf={}, px=({},{}) pos={}", lp.getPlate(), lp.getConfidence(), x / 4, y / 4, pos);
 
-                    addMsg(msg, lp.getPlate(), pos, lp.getConfidence() >= 94);
+                    addMsg(msg, lp.getPlate(), pos, lp.getConfidence() >= 94, camera.getId());
                 }
             }
 
@@ -130,7 +161,7 @@ public class TrackingService {
                 long h1 = Math.abs(lp.getPlateCoordinates()[2].getY() - lp.getPlateCoordinates()[1].getY());
                 long h2 = Math.abs(lp.getPlateCoordinates()[3].getY() - lp.getPlateCoordinates()[0].getY());
 
-                lastSeenAt.put(alpr.getBestPlate().getPlate(), System.currentTimeMillis());
+                // lastSeenAt.put(alpr.getBestPlate().getPlate(), System.currentTimeMillis());
 
                 int x = 0;
                 int y = 0;
@@ -139,17 +170,17 @@ public class TrackingService {
                     y = (int) (y + c.getY());
                 }
 
-                Position pos = mapper.mapPixelToRealWorld(new MappingContext(camera,  w, h1, h2, lp.getPlate()), new Pixel(x / 4, y / 4));
+                Position pos = mapper.mapPixelToRealWorld(new MappingContext(camera, w, h1, h2, lp.getPlate()), new Pixel(x / 4, y / 4));
                 logger.info("lp={}, conf={}, px=({},{}) pos={}", alpr.getBestPlate().getPlate(), alpr.getBestPlate().getConfidence(), x / 4, y / 4, pos);
 
-                addMsg(msg, alpr.getBestPlate().getPlate(), pos, true);
+                addMsg(msg, alpr.getBestPlate().getPlate(), pos, true, camera.getId());
             }
         }
 
         return msg;
     }
 
-    private void addMsg(List<Message> msg, String plate, Position newPos, boolean bestPlate) {
+    private void addMsg(List<Message> msg, String plate, Position newPos, boolean bestPlate, String cameraId) {
         String uuid = plateToUUID.get(plate);
         if (null == uuid) {
             uuid = UUID.randomUUID().toString();
@@ -161,15 +192,45 @@ public class TrackingService {
             bestPlateToUUID.put(plate, uuid);
         }
 
-        Position oldPos = uuidToPos.get(uuid);
-        if (oldPos == null) {
+        UniqueCar uniqueCar = uniqueCars.get(uuid);
+        if (uniqueCar == null) {
+            uniqueCar = new UniqueCar();
+            uniqueCar.setPlate(plate);
+            uniqueCar.getPositionPerCamera().put(cameraId, newPos);
+            uniqueCar.getLastSeenAtPerCamera().put(cameraId, System.currentTimeMillis());
+            uniqueCar.setBestPosition(newPos);
+
+            uniqueCars.put(uuid, uniqueCar);
+
             msg.add(new InitVehicle(uuid, newPos.getX(), newPos.getY(), plate));
         } else {
-            if (!oldPos.equals(newPos)) {
-                msg.add(new MoveVehicle(uuid, newPos.getX(), newPos.getY(), plate));
+            uniqueCar.getPositionPerCamera().put(cameraId, newPos);
+            uniqueCar.getLastSeenAtPerCamera().put(cameraId, System.currentTimeMillis());
+
+            Position oldBestPosition = uniqueCar.getBestPosition();
+            Position newBestPosition = calculateCentroid(uniqueCar.getPositionPerCamera().values().toArray(new Position[0]));
+
+            if (!oldBestPosition.equals(newBestPosition)) {
+                uniqueCar.setBestPosition(newBestPosition);
+                msg.add(new MoveVehicle(uuid, newBestPosition.getX(), newBestPosition.getY(), plate));
             }
 
         }
-        uuidToPos.put(uuid, newPos);
+    }
+
+
+    public Position calculateCentroid(Position[] positions) {
+        if (positions.length == 0) {
+            return null;
+        }
+        if (positions.length == 1) {
+            return positions[0];
+        }
+        int sumofx = 0, sumofy = 0;
+        for (int i = 0; i < positions.length; i++) {
+            sumofx = sumofx + positions[i].getX();
+            sumofy = sumofy + positions[i].getY();
+        }
+        return new Position(sumofx / positions.length, sumofy / positions.length);
     }
 }
