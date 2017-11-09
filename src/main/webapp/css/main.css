@@ -3,9 +3,18 @@ html, body {
 }
 body {
     background: #d5d7d8;
+    margin: 0px;
 }
 div#carpark_container {
     text-align: center;
+}
+
+div#logo_container {
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    padding-top: 12px;
+    padding-left: 15px;
 }
 
 ::selection { background: #a4dcec; }
@@ -46,28 +55,25 @@ input, textarea {
 
 #searchfield {
     display: block;
+    background: #2c3033;
     width: 100%;
-    text-align: center;
+    text-align: right;
     margin-bottom: 15px;
+    padding-right: 15px;
 }
 
 #searchfield form {
     display: inline-block;
-    background: #eeefed;
     padding: 0;
     margin: 0;
     padding: 5px;
-    border-radius: 3px;
-    margin: 5px 0 0 0;
 }
 
 #searchfield form .biginput {
-    width: 600px;
+    width: 400px;
     height: 40px;
     padding: 0 10px 0 10px;
     background-color: #fff;
-    border: 1px solid #c8c8c8;
-    border-radius: 3px;
     color: #aeaeae;
     font-weight:normal;
     font-size: 1.5em;
@@ -84,7 +90,6 @@ div.autocomplete-suggestions {
     padding: 0 10px 0 10px;
     background-color: #fff;
     border: 1px solid #c8c8c8;
-    border-radius: 3px;
     color: #aeaeae;
     font-weight:normal;
     font-size: 1.5em;
