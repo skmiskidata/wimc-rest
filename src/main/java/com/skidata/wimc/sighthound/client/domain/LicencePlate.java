@@ -10,7 +10,7 @@ public class LicencePlate {
 
     private Bounding bounding;
 
-    private AttributesLP attributesLP;
+    private AttributesLP attributes;
 
     public Bounding getBounding() {
         return bounding;
@@ -20,19 +20,19 @@ public class LicencePlate {
         this.bounding = bounding;
     }
 
-    public AttributesLP getAttributesLP() {
-        return attributesLP;
+    public AttributesLP getAttributes() {
+        return attributes;
     }
 
-    public void setAttributesLP(AttributesLP attributesLP) {
-        this.attributesLP = attributesLP;
+    public void setAttributesLP(AttributesLP attributes) {
+        this.attributes = attributes;
     }
 
     @Override
     public String toString() {
         return "LicencePlate{" +
                 "bounding=" + bounding +
-                ", attributesLP=" + attributesLP +
+                ", attributesLP=" + attributes +
                 '}';
     }
 }

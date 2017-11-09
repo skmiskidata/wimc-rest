@@ -1,8 +1,11 @@
 package com.skidata.wimc.sighthound.client.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 /**
  * Created by skmi on 7. 11. 2017.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class SystemLP {
 
     private StringLP string;

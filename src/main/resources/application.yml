@@ -2,8 +2,7 @@ recognition:
   service:
     sightEnabled: false
     webcams:
-      - http://192.168.0.2:8080/photoaf.jpg
-      - http://192.168.0.7:8080/photoaf.jpg
+      - http://11.0.0.100:8080/?action=snapshot
 
 sighthound:
   client:

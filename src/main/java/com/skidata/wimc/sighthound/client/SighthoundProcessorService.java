@@ -36,7 +36,7 @@ public class SighthoundProcessorService {
                 Thread.sleep(100);
             } while (counter < 100000);
         } catch (Exception ex) {
-            logger.error("Fatal error at processing camera: " + cameraUrl.toString());
+            logger.error("Fatal error at processing camera: " + cameraUrl.toString(), ex);
         }
     }
 
