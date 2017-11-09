@@ -75,11 +75,11 @@ function connect() {
             var event = JSON.parse(lpmessage.body);
             if (event.hasOwnProperty('InitVehicle')) {
                 var data = event['InitVehicle'];
-                initVehicle(data.uuid, data.lp, data.x, data.y);
+                initVehicle(data.uuid, data.lp, data.x, data.y, data.color);
             }
             else if (event.hasOwnProperty("MoveVehicle")) {
                 var data = event['MoveVehicle'];
-                moveVehicle(data.uuid, data.lp, data.x, data.y);
+                moveVehicle(data.uuid, data.lp, data.x, data.y, data.color);
             }
             else if (event.hasOwnProperty("RemoveVehicle")) {
                 var data = event['RemoveVehicle'];
@@ -105,7 +105,7 @@ function calcY(y) {
     return VIEWBOX_Y - (y / SAMPLE_Y * VIEWBOX_Y);
 }
 
-function initVehicle(id, licenseplate, dx, dy) {
+function initVehicle(id, licenseplate, dx, dy, color) {
     var defer = $.Deferred();
     var container = Snap("#carpark");
     Snap.load("asset/plate.svg", function(lp) {
@@ -118,6 +118,11 @@ function initVehicle(id, licenseplate, dx, dy) {
             licenseplate = 'Unknown';
         }
         lpelem.node.innerHTML = licenseplate;
+
+        if (color !== null) {
+            var color = lp.select('#vehicle_color');
+            color.attr('fill', color);
+        }
 
         var mainlayer = lp.select('#main_layer');
         mainlayer.stop().animate({transform: 'T' + calcX(dx) + ',' + calcY(dy)}, 0);
@@ -152,17 +157,21 @@ function initVehicle(id, licenseplate, dx, dy) {
     return defer.promise();
 }
 
-function moveVehicle(id, licenseplate, dx, dy) {
+function moveVehicle(id, licenseplate, dx, dy, color) {
     var lp = Snap.select("#lp_"+id);
     if (blockAnim === false) {
         if (lp !== undefined && lp !== null) {
+            if (color !== null) {
+                var color = lp.select('#vehicle_color');
+                color.attr('fill', color);
+            }
             var mainlayer = lp.select('#main_layer');
             mainlayer.stop().animate({transform: 'T' + calcX(dx) + ',' + calcY(dy)}, 200, null, function () {
                 intersectAllSpaces();
             });
         }
         else {
-            initVehicle(id, licenseplate, dx, dy);
+            initVehicle(id, licenseplate, dx, dy, color);
         }
     }
 }
