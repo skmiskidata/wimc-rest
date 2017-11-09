@@ -6,6 +6,7 @@ var OFFSET_X = 180;
 
 var vehicleData = [];
 var stompClient = null;
+var blockAnim = false;
 
 function initUI() {
     // Connect to web-socket
@@ -144,21 +145,24 @@ function initVehicle(id, licenseplate, dx, dy) {
 
 function moveVehicle(id, licenseplate, dx, dy) {
     var lp = Snap.select("#lp_"+id);
-    if (lp !== undefined && lp !== null) {
-        var mainlayer = lp.select('#main_layer');
-        mainlayer.stop().animate({transform: 'T' + calcX(dx) + ',' + calcY(dy)}, 200, null, function() {
-            intersectAllSpaces();
-        });
-
-    }
-    else {
-        initVehicle(id, licenseplate, dx, dy);
+    if (blockAnim === false) {
+        if (lp !== undefined && lp !== null) {
+            var mainlayer = lp.select('#main_layer');
+            mainlayer.stop().animate({transform: 'T' + calcX(dx) + ',' + calcY(dy)}, 200, null, function () {
+                intersectAllSpaces();
+            });
+        }
+        else {
+            initVehicle(id, licenseplate, dx, dy);
+        }
     }
 }
 
 function highlightVehicle(id) {
     var lp = Snap.select("#lp_"+id);
     if (lp !== undefined && lp !== null) {
+        blockAnim = true;
+
         var mainlayer = lp.select('#main_layer');
 
         var originalMatrix = mainlayer.transform().localMatrix;
@@ -167,6 +171,7 @@ function highlightVehicle(id) {
 
         mainlayer.stop().animate({ transform: scaledMatrix }, 1000, null, function() {
             mainlayer.stop().animate({ transform: originalMatrix }, 1000, null, function() {
+                blockAnim = false;
             })
         });
     }
