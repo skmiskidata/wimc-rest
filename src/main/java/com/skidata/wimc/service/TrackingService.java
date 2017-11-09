@@ -38,16 +38,33 @@ public class TrackingService {
     public TrackingService() {
         addBrickcom();
         addRaspberryCamFenster();
+        addRaspCam2();
 
         /*
         newCam = new Camera("604916464", new Position(0, 0), pixel2pos, area2Dists, 90.0);
         cameras.put(newCam.getId(), newCam);
 
-        newCam = new Camera("899804908", new Position(0, 0), pixel2pos, area2Dists, 90.0);
+        newCam = new Camera("89984908", new Position(0, 0), pixel2pos, area2Dists, 90.0);
         cameras.put(newCam.getId(), newCam);
 */
 
         mapper = new LinearPositionMapper();
+    }
+
+    private void addRaspCam2() {
+        Set<CalibrationPixel2Pos> pixel2pos = new HashSet<>();
+        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(1066, 582), new Position(450, 80)));
+        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(765, 578), new Position(450, 260)));
+        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(484, 548),  new Position(450, 450)));
+        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(417, 492),new Position(550, 580)));
+        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(532, 504),new Position(550, 450)));
+        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(830,421),new Position(810, 260)));
+        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(654,420),new Position(810,450)));
+
+
+        List<CalibrationLPArea2Dist> area2Dists = new ArrayList<>();
+        Camera newCam = new Camera("899804908", new Position(790, 100), pixel2pos, area2Dists, 90.0); //brickcom
+        cameras.put(newCam.getId(), newCam);
     }
 
     private void addRaspberryCamFenster() {
