@@ -16,6 +16,7 @@ public class InitVehicle extends Message {
         this.x = x;
         this.y = y;
         this.lp = lp;
+        this.color = color;
     }
 
     @JsonProperty

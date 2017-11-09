@@ -11,11 +11,12 @@ public class MoveVehicle extends Message {
     String lp;
     String color;
 
-    public MoveVehicle(String uuid, int x, int y, String lp, String Color) {
+    public MoveVehicle(String uuid, int x, int y, String lp, String color) {
         this.uuid = uuid;
         this.x = x;
         this.y = y;
         this.lp = lp;
+        this.color = color;
     }
 
     @JsonProperty
