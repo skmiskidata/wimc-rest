@@ -67,6 +67,18 @@
      inkscape:label="Capa 1"
      inkscape:groupmode="layer"
      id="main_layer">
+
+
+    <rect
+        y="-15"
+        x="-18"
+        height="120"
+        width="390"
+        fill="none"
+        fill-opacity="0.7"
+        rx="15"
+        ry="15"
+        id="vehicle_color"/>
     <g
        id="g2245">
       <rect
