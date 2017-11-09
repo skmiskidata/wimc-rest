@@ -46,17 +46,19 @@ public class TrackingService {
 
     private void addRaspCam2() {
         Set<CalibrationPixel2Pos> pixel2pos = new HashSet<>();
-        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(1066, 582), new Position(450, 80)));
-        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(765, 578), new Position(450, 260)));
-        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(484, 548), new Position(450, 450)));
-        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(417, 492), new Position(550, 580)));
-        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(532, 504), new Position(550, 450)));
-        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(830, 421), new Position(810, 260)));
-        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(654, 420), new Position(810, 450)));
+        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(1055, 573), new Position(450, 80)));
+        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(750, 573), new Position(450, 260)));
+        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(476, 573), new Position(450, 450)));
+//        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(417, 492), new Position(550, 580)));
+//        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(532, 504), new Position(550, 450)));
+        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(988, 421), new Position(810, 80)));
+        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(824, 421), new Position(810, 260)));
+        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(648, 421), new Position(810, 450)));
 
 
         List<CalibrationLPArea2Dist> area2Dists = new ArrayList<>();
-        Camera newCam = new Camera("899804908", new Position(790, 100), pixel2pos, area2Dists, 90.0); //brickcom
+//        Camera newCam = new Camera("899804908", new Position(300, 160), pixel2pos, area2Dists, 180.0/Math.PI*(+75.0));
+        Camera newCam = new Camera("899804908", new Position(0,0), pixel2pos, area2Dists, 180.0/Math.PI*+75.0);
         cameras.put(newCam.getId(), newCam);
     }
 
@@ -79,7 +81,8 @@ public class TrackingService {
 
         List<CalibrationLPArea2Dist> area2Dists = new ArrayList<>();
 
-        Camera newCam = new Camera("2103694419", new Position(790, 100), pixel2pos, area2Dists, 90.0); //brickcom
+       // Camera newCam = new Camera("2103694419", new Position(790, 1450), pixel2pos, area2Dists, 180.0);
+        Camera newCam = new Camera("2103694419", new Position(790, 0), pixel2pos, area2Dists, 0.0);
         cameras.put(newCam.getId(), newCam);
 
     }
@@ -105,7 +108,8 @@ public class TrackingService {
 //        area2Dists.add(new CalibrationLPArea2Dist(new Pixel(0, 0), 0, 2270, 560));
 //        area2Dists.add(new CalibrationLPArea2Dist(new Pixel(0, 0), 0, 1310, 740));
 
-        Camera newCam = new Camera("732045809", new Position(790, 100), pixel2pos, area2Dists, 90.0); //brickcom
+//        Camera newCam = new Camera("732045809", new Position(790, 100), pixel2pos, area2Dists, 0.0); //brickcom
+        Camera newCam = new Camera("732045809", new Position(790, 0), pixel2pos, area2Dists, 0.0); //brickcom
         cameras.put(newCam.getId(), newCam);
 
 
@@ -192,12 +196,14 @@ public class TrackingService {
                 long h2 = Math.abs(lp.getPlateCoordinates()[3].getY() - lp.getPlateCoordinates()[0].getY());
 
                 if (lp.getConfidence() >= REAL_TIME_BEST_CONFIDENCE || (findUniqueCarByPlate(lp.getPlate()) != null)) {
-                    Pixel pix = getPixel(lp.getPlateCoordinates());
+//                    if ("SL620NU".equals(lp.getPlate())) {
+                        Pixel pix = getPixel(lp.getPlateCoordinates());
 
-                    Position pos = mapper.mapPixelToRealWorld(new MappingContext(camera, w, h1, h2, lp.getPlate()), pix);
-                    logger.info("lp={}, conf={}, px=({},{}) pos={}", lp.getPlate(), lp.getConfidence(), pix.getX(), pix.getY(), pos);
+                        Position pos = mapper.mapPixelToRealWorld(new MappingContext(camera, w, h1, h2, lp.getPlate()), pix);
+                        logger.info("lp={}, conf={}, px=({},{}) pos={}", lp.getPlate(), lp.getConfidence(), pix.getX(), pix.getY(), pos);
 
-                    addMsg(msg, lp.getPlate(), pos, lp.getConfidence() >= REAL_TIME_BEST_CONFIDENCE, camera.getId(), null, null, lp.getConfidence());
+                        addMsg(msg, lp.getPlate(), pos, lp.getConfidence() >= REAL_TIME_BEST_CONFIDENCE, camera.getId(), null, null, lp.getConfidence());
+//                    }
                 }
             }
 

@@ -15,10 +15,36 @@ public class LinearPositionMapper implements PositionMapper {
     public Position mapPixelToRealWorld(MappingContext ctx, Pixel p) {
         Tuple<Tuple<Tuple<Integer, Position>, Tuple<Integer, Position>>,
                 Tuple<Tuple<Integer, Position>, Tuple<Integer, Position>>> ps = nearestFor(ctx.cam, p);
-        int x = interpolate(0, ps.getV1().getV1().getV1(), ps.getV1().getV1().getV2().getX(),
-                ps.getV1().getV2().getV1(), ps.getV1().getV2().getV2().getX(), p.getX());
-        int y = interpolate(0, ps.getV2().getV1().getV1(), ps.getV2().getV1().getV2().getY(),
-                ps.getV2().getV2().getV1(), ps.getV2().getV2().getV2().getY(), p.getY());
+        int pxx1 =  ps.getV1().getV1().getV1();
+        int pox1 =  ps.getV1().getV1().getV2().getX();
+        int pxx2 =  ps.getV1().getV2().getV1();
+        int pox2 =  ps.getV1().getV2().getV2().getX();
+        int pxy1 =  ps.getV2().getV1().getV1();
+        int poy1 =  ps.getV2().getV1().getV2().getY();
+        int pxy2 =  ps.getV2().getV2().getV1();
+        int poy2 =  ps.getV2().getV2().getV2().getY();
+
+        Position p1 = moveAndRotate(ctx, new Position(pox1, poy1));
+        Position p2 = moveAndRotate(ctx, new Position(pox2, poy2));
+        int x = interpolate(0, pxx1, p1.getX(), pxx2, p2.getX(), p.getX());
+        int y = interpolate(0, pxy1, p1.getY(), pxy2, p2.getY(), p.getY());
+        return rotateAndMove(ctx, new Position(x, y));
+    }
+
+    private Position rotateAndMove(MappingContext ctx, Position in) {
+        double a = ctx.cam.getAngle();
+        int x = (int) Math.round(Math.cos(a)*in.getX() + Math.sin(a)*in.getY());
+        int y = (int) Math.round(-1*Math.sin(a)*in.getX() + Math.cos(a)*in.getY());
+
+        Position p = new Position(x+ctx.cam.getPos().getX(), y+ctx.cam.getPos().getY());
+        return p;
+    }
+
+    private Position moveAndRotate(MappingContext ctx, Position in) {
+        Position p = new Position(in.getX()-ctx.cam.getPos().getX(), in.getY()-ctx.cam.getPos().getY());
+        double a = ctx.cam.getAngle();
+        int x = (int) Math.round(Math.cos(a)*p.getX() - Math.sin(a)*p.getY());
+        int y = (int) Math.round(Math.sin(a)*p.getX() + Math.cos(a)*p.getY());
         return new Position(x, y);
     }
 

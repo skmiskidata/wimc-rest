@@ -60,10 +60,10 @@ public class MainResponseController {
 
     @PostMapping(path = "/postAll", consumes = "application/json", produces = "application/json")
     public void postAll(@RequestBody AlprResult result) {
-        logger.info("Got Result: \n" + result);
+//        logger.info("Got Result: \n" + result);
         if (result != null) {
             if (result.getDataType().equalsIgnoreCase("heartbeat")) {
-                logger.info("Got heartbeat: " + result);
+//                logger.info("Got heartbeat: " + result);
             }
             if (result.getDataType().equalsIgnoreCase("alpr_results")) {
                 StringBuffer sb = new StringBuffer();
