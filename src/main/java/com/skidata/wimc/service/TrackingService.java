@@ -53,10 +53,11 @@ public class TrackingService {
         area2Dists.add(new CalibrationLPArea2Dist(2270, 560));
         area2Dists.add(new CalibrationLPArea2Dist(1310, 740));
 
-        Camera brickcom = new Camera("1", new Position(0, 0), pixel2pos, area2Dists, 90.0);
-//        Camera newCam = new Camera("732045809", new Position(0, 0), pixel2pos, area2Dists, 90.0);
-        cameras.put(brickcom.getId(), brickcom);
-//        cameras.put(newCam.getId(), newCam);
+        Camera newCam = new Camera("732045809", new Position(0, 0), pixel2pos, area2Dists, 90.0);
+        cameras.put(newCam.getId(), newCam);
+
+        newCam = new Camera("2103694419", new Position(0, 0), pixel2pos, area2Dists, 90.0);
+        cameras.put(newCam.getId(), newCam);
 
         mapper = new LinearPositionMapper();
     }
@@ -95,9 +96,12 @@ public class TrackingService {
 
             for (LicencePlate lp : alpr.getResults()) {
 
+                long w = Math.abs(lp.getPlateCoordinates()[1].getX() - lp.getPlateCoordinates()[0].getX());
+                long h1 = Math.abs(lp.getPlateCoordinates()[2].getY() - lp.getPlateCoordinates()[1].getY());
+                long h2 = Math.abs(lp.getPlateCoordinates()[3].getY() - lp.getPlateCoordinates()[0].getY());
 
                 //logger.info("lp={}, conf={}, lpw={}, lph={}, lparea={}", lp.getPlate(), lp.getConfidence(), w, h, w*h);
-                if (lp.getConfidence() >= 85 || (bestPlateToUUID.get(lp.getPlate()) != null)) {
+                if (lp.getConfidence() >= 94 || (bestPlateToUUID.get(lp.getPlate()) != null)) {
 
                     lastSeenAt.put(lp.getPlate(), System.currentTimeMillis());
 
@@ -107,23 +111,39 @@ public class TrackingService {
                         x = (int) (x + c.getX());
                         y = (int) (y + c.getY());
                     }
-                    Pixel pix = new Pixel(x/4, y/4);
 
-                    PlateCoordinate[] co = alpr.getBestPlate().getPlateCoordinates();
-                    long w = Math.abs(co[1].getX() - co[0].getX());
-                    long h1 = Math.abs(co[2].getY() - co[1].getY());
-                    long h2 = Math.abs(co[3].getY() - co[0].getY());
+                    Position pos = mapper.mapPixelToRealWorld(new MappingContext(camera,  w, h1, h2, lp.getPlate()), new Pixel(x / 4, y / 4));
+                    logger.info("lp={}, conf={}, px=({},{}) pos={}", lp.getPlate(), lp.getConfidence(), x / 4, y / 4, pos);
 
-                    String plate = alpr.getBestPlate().getPlate();
-                    MappingContext ctx = new MappingContext(camera, w, h1, h2, plate);
-                    new LPAreaPositionMapper().mapPixelToRealWorld(ctx, pix);
-                    Position pos = mapper.mapPixelToRealWorld(ctx, pix);
-
-                    logger.info("lp={}, conf={}, px={} pos={}", plate, alpr.getBestPlate().getConfidence(), pix, pos);
-                    addMsg(msg, plate, pos, lp.getConfidence() >= 94);
+                    addMsg(msg, lp.getPlate(), pos, lp.getConfidence() >= 94);
                 }
             }
 
+        }
+
+        if (alpr.getBestPlate() != null) {
+            if (alpr.getBestPlate().getConfidence() >= 94) {
+
+                LicencePlate lp = alpr.getBestPlate();
+
+                long w = Math.abs(lp.getPlateCoordinates()[1].getX() - lp.getPlateCoordinates()[0].getX());
+                long h1 = Math.abs(lp.getPlateCoordinates()[2].getY() - lp.getPlateCoordinates()[1].getY());
+                long h2 = Math.abs(lp.getPlateCoordinates()[3].getY() - lp.getPlateCoordinates()[0].getY());
+
+                lastSeenAt.put(alpr.getBestPlate().getPlate(), System.currentTimeMillis());
+
+                int x = 0;
+                int y = 0;
+                for (PlateCoordinate c : alpr.getBestPlate().getPlateCoordinates()) {
+                    x = (int) (x + c.getX());
+                    y = (int) (y + c.getY());
+                }
+
+                Position pos = mapper.mapPixelToRealWorld(new MappingContext(camera,  w, h1, h2, lp.getPlate()), new Pixel(x / 4, y / 4));
+                logger.info("lp={}, conf={}, px=({},{}) pos={}", alpr.getBestPlate().getPlate(), alpr.getBestPlate().getConfidence(), x / 4, y / 4, pos);
+
+                addMsg(msg, alpr.getBestPlate().getPlate(), pos, true);
+            }
         }
 
         return msg;
