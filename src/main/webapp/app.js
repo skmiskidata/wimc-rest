@@ -85,6 +85,10 @@ function connect() {
                 var data = event['RemoveVehicle'];
                 removeVehicle(data.uuid);
             }
+            else if (event.hasOwnProperty("ChangeLP")) {
+                var data = event['ChangeLP'];
+                changeLP(data.uuid, data.lp);
+            }
             //console.log(event);
         });
     });
@@ -201,6 +205,16 @@ function removeVehicle(id) {
         lp.remove();
         removeVehicleData(id);
         intersectAllSpaces();
+    }
+}
+
+function changeLP(id, licenseplate) {
+    var lp = Snap.select("#lp_"+id);
+    if (lp !== undefined && lp !== null) {
+        var lpelem = lp.select('#licenseplate_number');
+        if (lpelem !== undefined && lpelem !== null) {
+            lpelem.node.innerHTML = licenseplate;
+        }
     }
 }
 
