@@ -12,6 +12,8 @@ public class UniqueCar {
 
     private String plate;
 
+    private Float highestConfidenceAchieved;
+
     private Map<String, Position> positionPerCamera = new ConcurrentHashMap<>();
 
     private Map<String, Long> lastSeenAtPerCamera = new ConcurrentHashMap<>();
@@ -86,5 +88,13 @@ public class UniqueCar {
 
     public void setLastBestLPConfidence(Float lastBestLPConfidence) {
         this.lastBestLPConfidence = lastBestLPConfidence;
+    }
+
+    public Float getHighestConfidenceAchieved() {
+        return highestConfidenceAchieved;
+    }
+
+    public void setHighestConfidenceAchieved(Float highestConfidenceAchieved) {
+        this.highestConfidenceAchieved = highestConfidenceAchieved;
     }
 }

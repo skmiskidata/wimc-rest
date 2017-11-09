@@ -99,7 +99,7 @@ public class MainResponseController {
     }
 
 
-    @Scheduled(fixedDelay = 300)
+    @Scheduled(fixedRate = 500)
     public void checkForMissingLicencePlates() {
         //logger.info("Checking for vanished");
         List<Message> msgs = trackingService.checkForVanished();

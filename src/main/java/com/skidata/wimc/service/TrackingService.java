@@ -8,10 +8,7 @@ import com.skidata.wimc.tracking.impl.CalibrationLPArea2Dist;
 import com.skidata.wimc.tracking.impl.CalibrationPixel2Pos;
 import com.skidata.wimc.tracking.impl.LinearPositionMapper;
 import com.skidata.wimc.tracking.impl.MappingContext;
-import com.skidata.wimc.tracking.messages.InitVehicle;
-import com.skidata.wimc.tracking.messages.Message;
-import com.skidata.wimc.tracking.messages.MoveVehicle;
-import com.skidata.wimc.tracking.messages.RemoveVehicle;
+import com.skidata.wimc.tracking.messages.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,21 +20,20 @@ import java.util.concurrent.ConcurrentHashMap;
 @RestController
 public class TrackingService {
 
-    private static final int INVALIDATE_RESULT_AFTER = 2000;
+    private static final int INVALIDATE_RESULT_AFTER = 2500;
 
     private static final int BEST_PLATE_CONFIDENCE = 94;
 
     private static final int REAL_TIME_BEST_CONFIDENCE = 94;
 
+    private static final int DISTANCE_TO_CONSIDER = 150;
+
     private static final Logger logger = LoggerFactory.getLogger(MainResponseController.class);
 
-    private Map<String, String> plateToUUID = new ConcurrentHashMap<>();
+    private static final Map<String, Camera> cameras = new ConcurrentHashMap<>();
 
-    private Map<String, String> bestPlateToUUID = new ConcurrentHashMap<>();
-
-    private Map<String, Camera> cameras = new ConcurrentHashMap<>();
-
-    private Map<String, UniqueCar> uniqueCars = new ConcurrentHashMap<>();
+    //private static final Map<String, UniqueCar> uniqueCars = new HashMap<>();
+    //private static final Map<String, UniqueCar> uniqueCarsPerPlate = new HashMap<>();
 
     private final PositionMapper mapper;
 
@@ -126,9 +122,11 @@ public class TrackingService {
     public List<Message> checkForVanished() {
         List<Message> msg = new ArrayList<>();
         long systemTime = System.currentTimeMillis();
-        for (String uuid : uniqueCars.keySet()) {
-
-            UniqueCar uniqueCar = uniqueCars.get(uuid);
+        int i = 0;
+        ArrayList<UniqueCar> platesToRemove = new ArrayList();
+        for (UniqueCar uniqueCar : SingletonDB.getInstance().getUniqueCars()) {
+            i++;
+            logger.info("Cleaning car no. " + i + "; " + uniqueCar.getPlate() + " - " + uniqueCar.getUuid());
 
             boolean recalculate = false;
             // remove all old licence plate recognitions
@@ -143,23 +141,37 @@ public class TrackingService {
             if (recalculate) {
                 Position oldBestPosition = uniqueCar.getBestPosition();
                 int size = uniqueCar.getPositionPerCamera().values().size();
-                Position newBestPosition = calculateCentroid(uniqueCar.getPositionPerCamera().values().toArray(new Position[size]));
+                Position newBestPosition = null;
+                if (size > 0) {
+                    newBestPosition = calculateCentroid(uniqueCar.getPositionPerCamera().values().toArray(new Position[size]));
+                }
 
                 if (newBestPosition == null) {
-                    uniqueCars.remove(uuid);
-                    bestPlateToUUID.remove(uniqueCar.getPlate());
-                    plateToUUID.remove(uniqueCar.getPlate());
-                    msg.add(new RemoveVehicle(uuid));
+                    platesToRemove.add(uniqueCar);
+                    msg.add(new RemoveVehicle(uniqueCar.getUuid()));
                 } else if (!oldBestPosition.equals(newBestPosition)) {
                     uniqueCar.setBestPosition(newBestPosition);
-                    msg.add(new MoveVehicle(uuid, newBestPosition.getX(), newBestPosition.getY(), uniqueCar.getPlate(), uniqueCar.getBestColor()));
+                    msg.add(new MoveVehicle(uniqueCar.getUuid(), newBestPosition.getX(), newBestPosition.getY(), uniqueCar.getPlate(), uniqueCar.getBestColor()));
                 }
             }
 
         }
+
+        for (UniqueCar uniqueCar : platesToRemove) {
+            SingletonDB.getInstance().getUniqueCars().remove(uniqueCar);
+        }
         return msg;
     }
 
+
+    public UniqueCar findUniqueCarByPlate(String plate) {
+        for (UniqueCar uniqueCar : SingletonDB.getInstance().getUniqueCars()) {
+            if (uniqueCar.getPlate().equalsIgnoreCase(plate)) {
+                return uniqueCar;
+            }
+        }
+        return null;
+    }
 
     public List<Message> mapToRealWorld(AlprResult alpr) {
         List<Message> msg = new ArrayList<>();
@@ -174,25 +186,33 @@ public class TrackingService {
 
             for (LicencePlate lp : alpr.getResults()) {
 
-                logger.info("tracking lp " + lp.getPlate() + " with confidence " + lp.getConfidence());
+                logger.info("tracking realtime lp " + lp.getPlate() + " with confidence " + lp.getConfidence());
 
                 long w = Math.abs(lp.getPlateCoordinates()[1].getX() - lp.getPlateCoordinates()[0].getX());
                 long h1 = Math.abs(lp.getPlateCoordinates()[2].getY() - lp.getPlateCoordinates()[1].getY());
                 long h2 = Math.abs(lp.getPlateCoordinates()[3].getY() - lp.getPlateCoordinates()[0].getY());
 
-                if (lp.getConfidence() >= REAL_TIME_BEST_CONFIDENCE || (bestPlateToUUID.get(lp.getPlate()) != null)) {
+                if (lp.getConfidence() >= REAL_TIME_BEST_CONFIDENCE || (findUniqueCarByPlate(lp.getPlate()) != null)) {
                     Pixel pix = getPixel(lp.getPlateCoordinates());
 
                     Position pos = mapper.mapPixelToRealWorld(new MappingContext(camera, w, h1, h2, lp.getPlate()), pix);
                     logger.info("lp={}, conf={}, px=({},{}) pos={}", lp.getPlate(), lp.getConfidence(), pix.getX(), pix.getY(), pos);
 
-                    addMsg(msg, lp.getPlate(), pos, lp.getConfidence() >= REAL_TIME_BEST_CONFIDENCE, camera.getId(), null, null);
+                    addMsg(msg, lp.getPlate(), pos, lp.getConfidence() >= REAL_TIME_BEST_CONFIDENCE, camera.getId(), null, null, lp.getConfidence());
                 }
             }
 
         }
 
         if (alpr.getBestPlate() != null) {
+            String color = null;
+            Float colorConfidence = 0f;
+            // we update the color even the confidence for the group is lower as our treshold
+            if (alpr.getVehicle() != null && alpr.getVehicle().getColors() != null && alpr.getVehicle().getColors().length > 0) {
+                color = alpr.getVehicle().getColors()[0].getName();
+                colorConfidence = alpr.getVehicle().getColors()[0].getConfidence();
+                updateCarColor(alpr.getBestPlate().getPlate(), color, colorConfidence);
+            }
             if (alpr.getBestPlate().getConfidence() >= BEST_PLATE_CONFIDENCE) {
 
                 logger.info("tracking best result for LP " + alpr.getBestPlate().getPlate() + " with confidence " + alpr.getBestPlate().getConfidence());
@@ -207,14 +227,7 @@ public class TrackingService {
                 Position pos = mapper.mapPixelToRealWorld(new MappingContext(camera, w, h1, h2, lp.getPlate()), pix);
                 logger.info("lp={}, conf={}, px=({},{}) pos={}", alpr.getBestPlate().getPlate(), alpr.getBestPlate().getConfidence(), pix.getX(), pix.getY(), pos);
 
-                String color = null;
-                Float colorConfidence = 0f;
-                if (alpr.getVehicle() != null && alpr.getVehicle().getColors() != null && alpr.getVehicle().getColors().length > 0) {
-                    color = alpr.getVehicle().getColors()[0].getName();
-                    colorConfidence = alpr.getVehicle().getColors()[0].getConfidence();
-                }
-
-                addMsg(msg, alpr.getBestPlate().getPlate(), pos, true, camera.getId(), color, colorConfidence);
+                addMsg(msg, alpr.getBestPlate().getPlate(), pos, true, camera.getId(), color, colorConfidence, alpr.getBestPlate().getConfidence());
             }
         }
 
@@ -231,47 +244,76 @@ public class TrackingService {
         return new Pixel(x / 4, y / 4);
     }
 
-    private void addMsg(List<Message> msg, String plate, Position newPos, boolean bestPlate, String cameraId, String color, Float colorConfidence) {
-        String uuid = plateToUUID.get(plate);
-        if (null == uuid) {
-            uuid = UUID.randomUUID().toString();
-            plateToUUID.put(plate, uuid);
-            logger.info("ADDMSG: new uuid created " + uuid + " LP: " + plate);
+
+    public UniqueCar findBestMatchingPositionHoweverNotForExistingPlate(String plate, Position position) {
+        for (UniqueCar uniqueCar : SingletonDB.getInstance().getUniqueCars()) {
+            double distance = distance(position, uniqueCar.getBestPosition());
+            if (distance < DISTANCE_TO_CONSIDER && !uniqueCar.getPlate().equalsIgnoreCase(plate)) {
+                return uniqueCar;
+            }
+        }
+        return null;
+    }
+
+
+    private void updateCarColor(String plate, String color, Float colorConfidence) {
+        UniqueCar uniqueCar = findUniqueCarByPlate(plate);
+        if (uniqueCar != null) {
+            if (colorConfidence != null && colorConfidence > uniqueCar.getBestColorConfidence()) {
+                uniqueCar.setBestColor(color);
+                uniqueCar.setBestColorConfidence(colorConfidence);
+                logger.info("######  updating old color with higher confidence " + uniqueCar.getUuid() + " LP: " + plate + " color: " + color + " conf: " + colorConfidence);
+            }
+        }
+    }
+
+    private void addMsg(List<Message> msg, String foundPlate, Position newPos, boolean bestPlate, String cameraId, String color, Float colorConfidence, Float currentConfidence) {
+        String plate = foundPlate;
+        UniqueCar uniqueCar = null;
+        if (bestPlate) {
+            // merging plates if better comes along in the same area
+            uniqueCar = findBestMatchingPositionHoweverNotForExistingPlate(plate, newPos);
+            if (uniqueCar != null) {
+                logger.info("check old plate to rename......");
+                if (uniqueCar.getHighestConfidenceAchieved() < currentConfidence) {
+                    // change licence plate number
+                    uniqueCar.setPlate(plate);
+                    logger.info("... changing plate to " + plate + " due to higher confidence on the same area in the 2D map");
+                    msg.add(new ChangeLP(uniqueCar.getUuid(), plate));
+                } else {
+                    // its better to ignore this result as to have another licence plate in the same spot
+                    logger.info("... using old plate " + uniqueCar.getPlate() + " due to position collision");
+                    plate = uniqueCar.getPlate();
+                }
+            }
         }
 
-        String bestUuid = bestPlateToUUID.get(plate);
-        if (bestPlate && (bestUuid == null)) {
-            bestPlateToUUID.put(plate, uuid);
-            logger.info("ADDMSG: new best plate reported " + bestUuid + " LP: " + plate);
-        }
-
-        UniqueCar uniqueCar = uniqueCars.get(uuid);
         if (uniqueCar == null) {
+            uniqueCar = findUniqueCarByPlate(plate);
+        }
+
+        if ((uniqueCar == null) && (bestPlate)) {
+            logger.info("#################### I SEE NEW PLATE ######### " + plate);
             uniqueCar = new UniqueCar();
             uniqueCar.setPlate(plate);
+            String uuid = UUID.randomUUID().toString();
+            uniqueCar.setUuid(uuid);
             uniqueCar.getPositionPerCamera().put(cameraId, newPos);
             uniqueCar.getLastSeenAtPerCamera().put(cameraId, System.currentTimeMillis());
             uniqueCar.setBestPosition(newPos);
             uniqueCar.setBestColor(color);
             uniqueCar.setBestColorConfidence(colorConfidence == null ? 0f : colorConfidence);
 
-            uniqueCars.put(uuid, uniqueCar);
+            SingletonDB.getInstance().getUniqueCars().add(uniqueCar);
 
-            logger.info("ADDMSG: new unique car created " + uuid + " LP: " + plate);
+            logger.info("ADDMSG: new unique car created " + uniqueCar.getUuid() + " LP: " + plate);
 
             msg.add(new InitVehicle(uuid, newPos.getX(), newPos.getY(), plate, uniqueCar.getBestColor()));
         } else {
             uniqueCar.getPositionPerCamera().put(cameraId, newPos);
             uniqueCar.getLastSeenAtPerCamera().put(cameraId, System.currentTimeMillis());
 
-            logger.info("ADDMSG: updating old unique car " + uuid + " LP: " + plate);
-
-            if (colorConfidence != null && colorConfidence > uniqueCar.getBestColorConfidence()) {
-                uniqueCar.setBestColor(color);
-                uniqueCar.setBestColorConfidence(colorConfidence);
-
-                logger.info("ADDMSG: updating old color with higher confidence " + uuid + " LP: " + plate + " color: " + color + " conf: " + colorConfidence);
-            }
+            logger.info("ADDMSG: updating old unique car " + uniqueCar.getUuid() + " LP: " + plate);
 
             Position oldBestPosition = uniqueCar.getBestPosition();
             int size = uniqueCar.getPositionPerCamera().values().size();
@@ -280,9 +322,15 @@ public class TrackingService {
             if (!oldBestPosition.equals(newBestPosition)) {
                 uniqueCar.setBestPosition(newBestPosition);
                 logger.info("ADDMSG: moving vehicle with new best postition. LP: " + plate);
-                msg.add(new MoveVehicle(uuid, newBestPosition.getX(), newBestPosition.getY(), plate, uniqueCar.getBestColor()));
+                msg.add(new MoveVehicle(uniqueCar.getUuid(), newBestPosition.getX(), newBestPosition.getY(), plate, uniqueCar.getBestColor()));
             }
 
+        }
+        if (bestPlate || uniqueCar.getHighestConfidenceAchieved() == null) {
+            uniqueCar.setLastBestLPConfidence(currentConfidence);
+            if (uniqueCar.getHighestConfidenceAchieved() == null || uniqueCar.getHighestConfidenceAchieved() < currentConfidence) {
+                uniqueCar.setHighestConfidenceAchieved(currentConfidence);
+            }
         }
     }
 
