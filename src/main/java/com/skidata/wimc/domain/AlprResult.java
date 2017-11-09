@@ -19,6 +19,27 @@ public class AlprResult {
     @JsonProperty("epoch_time")
     private String epochTime;
 
+    @JsonProperty("epoch_start")
+    private Long epochStart;
+
+    @JsonProperty("epoch_end")
+    private Long epochEnd;
+
+    @JsonProperty("agent_uid")
+    private String agentUid;
+
+    @JsonProperty("agent_version")
+    private String agentVersion;
+
+    @JsonProperty("agent_type")
+    private String agentType;
+
+    @JsonProperty("company_id")
+    private String companyId;
+
+    @JsonProperty("country")
+    private String country;
+
     @JsonProperty("img_width")
     private Long imageWidth;
 
@@ -38,6 +59,13 @@ public class AlprResult {
 
     @JsonProperty("site_id")
     private String siteId;
+
+    @JsonProperty("best_plate")
+    private LicencePlate bestPlate;
+
+    @JsonProperty("vehicle")
+    private Vehicle vehicle;
+
 
     public LicencePlate[] getResults() {
         return results;
@@ -119,12 +147,91 @@ public class AlprResult {
         this.siteId = siteId;
     }
 
+    public Long getEpochStart() {
+        return epochStart;
+    }
+
+    public void setEpochStart(Long epochStart) {
+        this.epochStart = epochStart;
+    }
+
+    public Long getEpochEnd() {
+        return epochEnd;
+    }
+
+    public void setEpochEnd(Long epochEnd) {
+        this.epochEnd = epochEnd;
+    }
+
+    public String getAgentUid() {
+        return agentUid;
+    }
+
+    public void setAgentUid(String agentUid) {
+        this.agentUid = agentUid;
+    }
+
+    public String getAgentVersion() {
+        return agentVersion;
+    }
+
+    public void setAgentVersion(String agentVersion) {
+        this.agentVersion = agentVersion;
+    }
+
+    public String getAgentType() {
+        return agentType;
+    }
+
+    public void setAgentType(String agentType) {
+        this.agentType = agentType;
+    }
+
+    public String getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(String companyId) {
+        this.companyId = companyId;
+    }
+
+    public String getCountry() {
+        return country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
+    }
+
+    public LicencePlate getBestPlate() {
+        return bestPlate;
+    }
+
+    public void setBestPlate(LicencePlate bestPlate) {
+        this.bestPlate = bestPlate;
+    }
+
+    public Vehicle getVehicle() {
+        return vehicle;
+    }
+
+    public void setVehicle(Vehicle vehicle) {
+        this.vehicle = vehicle;
+    }
+
     @Override
     public String toString() {
         return "AlprResult{" +
                 "version='" + version + '\'' +
                 ", dataType='" + dataType + '\'' +
                 ", epochTime='" + epochTime + '\'' +
+                ", epochStart=" + epochStart +
+                ", epochEnd=" + epochEnd +
+                ", agentUid='" + agentUid + '\'' +
+                ", agentVersion='" + agentVersion + '\'' +
+                ", agentType='" + agentType + '\'' +
+                ", companyId='" + companyId + '\'' +
+                ", country='" + country + '\'' +
                 ", imageWidth=" + imageWidth +
                 ", imageHeight=" + imageHeight +
                 ", processingTimeMs=" + processingTimeMs +
@@ -132,6 +239,8 @@ public class AlprResult {
                 ", uuid='" + uuid + '\'' +
                 ", cameraId='" + cameraId + '\'' +
                 ", siteId='" + siteId + '\'' +
+                ", bestPlate=" + bestPlate +
+                ", vehicle=" + vehicle +
                 '}';
     }
 }

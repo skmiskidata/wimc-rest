@@ -1,10 +1,13 @@
 package com.skidata.wimc.sighthound.client.domain;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  * Created by skmi on 7. 11. 2017.
  */
 public class AttributesLP {
 
+    @JsonProperty("system")
     private SystemLP systemLP;
 
     public SystemLP getSystemLP() {
