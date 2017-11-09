@@ -85,6 +85,10 @@ function connect() {
                 var data = event['RemoveVehicle'];
                 removeVehicle(data.uuid);
             }
+            else if (event.hasOwnProperty("ChangeLP")) {
+                var data = event['ChangeLP'];
+                changeLP(data.uuid, data.lp);
+            }
             //console.log(event);
         });
     });
@@ -120,8 +124,8 @@ function initVehicle(id, licenseplate, dx, dy, color) {
         lpelem.node.innerHTML = licenseplate;
 
         if (color !== null) {
-            var color = lp.select('#vehicle_color');
-            color.attr('fill', color);
+            var vehiclecolor = lp.select('#vehicle_color');
+            vehiclecolor.attr('fill', color);
         }
 
         var mainlayer = lp.select('#main_layer');
@@ -162,8 +166,8 @@ function moveVehicle(id, licenseplate, dx, dy, color) {
     if (blockAnim === false) {
         if (lp !== undefined && lp !== null) {
             if (color !== null) {
-                var color = lp.select('#vehicle_color');
-                color.attr('fill', color);
+                var vehiclecolor = lp.select('#vehicle_color');
+                vehiclecolor.attr('fill', color);
             }
             var mainlayer = lp.select('#main_layer');
             mainlayer.stop().animate({transform: 'T' + calcX(dx) + ',' + calcY(dy)}, 200, null, function () {
@@ -201,6 +205,16 @@ function removeVehicle(id) {
         lp.remove();
         removeVehicleData(id);
         intersectAllSpaces();
+    }
+}
+
+function changeLP(id, licenseplate) {
+    var lp = Snap.select("#lp_"+id);
+    if (lp !== undefined && lp !== null) {
+        var lpelem = lp.select('#licenseplate_number');
+        if (lpelem !== undefined && lpelem !== null) {
+            lpelem.node.innerHTML = licenseplate;
+        }
     }
 }
 
