@@ -52,12 +52,12 @@ public class TrackingService {
         pixel2pos.add(new CalibrationPixel2Pos(new Pixel(1176, 471), new Position(1050, 450)));
 
         List<CalibrationLPArea2Dist> area2Dists = new ArrayList<>();
-        area2Dists.add(new CalibrationLPArea2Dist(5820, 340));
-        area2Dists.add(new CalibrationLPArea2Dist(3810, 450));
-        area2Dists.add(new CalibrationLPArea2Dist(2270, 560));
-        area2Dists.add(new CalibrationLPArea2Dist(1310, 740));
+        area2Dists.add(new CalibrationLPArea2Dist(new Pixel(0,0), 0, 5820, 340));
+        area2Dists.add(new CalibrationLPArea2Dist(new Pixel(0,0), 0, 3810, 450));
+        area2Dists.add(new CalibrationLPArea2Dist(new Pixel(0,0),  0, 2270, 560));
+        area2Dists.add(new CalibrationLPArea2Dist(new Pixel(0,0), 0, 1310, 740));
 
-        Camera newCam = new Camera("732045809", new Position(0, 0), pixel2pos, area2Dists, 90.0);
+        Camera newCam = new Camera("732045809", new Position(790, 100), pixel2pos, area2Dists, 90.0); //brickcom
         cameras.put(newCam.getId(), newCam);
 
         newCam = new Camera("2103694419", new Position(0, 0), pixel2pos, area2Dists, 90.0);

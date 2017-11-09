@@ -15,22 +15,22 @@ public class LinearPositionMapper implements PositionMapper {
     public Position mapPixelToRealWorld(MappingContext ctx, Pixel p) {
         Tuple<Tuple<Tuple<Integer, Position>, Tuple<Integer, Position>>,
                 Tuple<Tuple<Integer, Position>, Tuple<Integer, Position>>> ps = nearestFor(ctx.cam, p);
-        int x = interpolate(ps.getV1().getV1().getV1(), ps.getV1().getV1().getV2().getX(),
+        int x = interpolate(0, ps.getV1().getV1().getV1(), ps.getV1().getV1().getV2().getX(),
                 ps.getV1().getV2().getV1(), ps.getV1().getV2().getV2().getX(), p.getX());
-        int y = interpolate(ps.getV2().getV1().getV1(), ps.getV2().getV1().getV2().getY(),
+        int y = interpolate(0, ps.getV2().getV1().getV1(), ps.getV2().getV1().getV2().getY(),
                 ps.getV2().getV2().getV1(), ps.getV2().getV2().getV2().getY(), p.getY());
         return new Position(x, y);
     }
 
-    private int interpolate(int px1, int pos1, int px2, int pos2, int px) {
+    private int interpolate(int camOffset, int px1, int pos1, int px2, int pos2, int px) {
         logger.info("using for interpolation pixel1={} pos1={} pixel2={} pos2={} px={}", px1, pos1, px2, pos2, px);
         if (px1 == px2)
             return pos1;
 
         double pxd = px2 - px1;
-        double posd = pos2 - pos1;
+        double posd = pos2- pos1 + camOffset;
 
-        return (int) Math.round(pos1 + posd*((px - px1) / pxd));
+        return (int) Math.round(pos1 + posd*((px - px1) / pxd))-camOffset;
     }
 
     private Tuple<Tuple<Tuple<Integer,Position>, Tuple<Integer,Position>>,
