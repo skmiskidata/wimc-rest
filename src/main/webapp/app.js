@@ -65,17 +65,17 @@ function connect() {
             var event = JSON.parse(lpmessage.body);
             if (event.hasOwnProperty('InitVehicle')) {
                 var data = event['InitVehicle'];
-                //initVehicle(data.uuid, data.lp, data.x, data.y);
+                initVehicle(data.uuid, data.lp, data.x, data.y);
             }
             else if (event.hasOwnProperty("MoveVehicle")) {
                 var data = event['MoveVehicle'];
-                //moveVehicle(data.uuid, data.lp, data.x, data.y);
+                moveVehicle(data.uuid, data.lp, data.x, data.y);
             }
             else if (event.hasOwnProperty("RemoveVehicle")) {
                 var data = event['RemoveVehicle'];
-                //removeVehicle(data.uuid);
+                removeVehicle(data.uuid);
             }
-            console.log(event);
+            //console.log(event);
         });
     });
 }
