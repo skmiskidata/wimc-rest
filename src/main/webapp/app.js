@@ -4,18 +4,55 @@ var SAMPLE_X = 1600;
 var SAMPLE_Y = 900;
 var OFFSET_X = 180;
 
-var licenseplateIds = [];
-
+var vehicleData = [];
 var stompClient = null;
 
-function addPlateId(id) {
-    licenseplateIds.push(id);
+function initUI() {
+    // Connect to web-socket
+    connect();
+
+    function resize() {
+        var newwidth = $(window).width()-20;
+        var newheight = $(window).height()-80;
+        $("#carpark_container").height(newheight).width(newwidth);
+    }
+    resize();
+
+    $(window).resize(function(){
+        resize();
+    });
+
+    $("#search-form").submit(function(e){
+        console.log(e);
+        return false;
+    });
+
+    $('#autocomplete').autocomplete({
+        lookup: vehicleData,
+        autoFocus: true,
+        delay: 200,
+        onSelect: function (suggestion) {
+            highlightVehicle(suggestion.id);
+        }
+    });
 }
 
-function removePlateId(id) {
-    var index = licenseplateIds.indexOf(id);
+function addVehicleData(id, licenseplate) {
+    var data = {};
+    data.value = licenseplate;
+    data.id = id;
+    vehicleData.push(data);
+}
+
+function removeVehicleData(id) {
+    var index = -1;
+    $.each(vehicleData, function(i, data) {
+        if (data.id === id) {
+            index = i;
+        }
+    });
     if (index > -1) {
-        licenseplateIds.splice(index, 1);
+        vehicleData.splice(index, 1);
     }
 }
 
@@ -28,15 +65,15 @@ function connect() {
             var event = JSON.parse(lpmessage.body);
             if (event.hasOwnProperty('InitVehicle')) {
                 var data = event['InitVehicle'];
-                initVehicle(data.uuid, data.lp, data.x, data.y);
+                //initVehicle(data.uuid, data.lp, data.x, data.y);
             }
             else if (event.hasOwnProperty("MoveVehicle")) {
                 var data = event['MoveVehicle'];
-                moveVehicle(data.uuid, data.lp, data.x, data.y);
+                //moveVehicle(data.uuid, data.lp, data.x, data.y);
             }
             else if (event.hasOwnProperty("RemoveVehicle")) {
                 var data = event['RemoveVehicle'];
-                removeVehicle(data.uuid);
+                //removeVehicle(data.uuid);
             }
             console.log(event);
         });
@@ -67,12 +104,16 @@ function initVehicle(id, licenseplate, dx, dy) {
         rootelem.attr({ id: 'lp_'+id, viewBox: '0 0 3840 2160' });
 
         var lpelem = lp.select('#licenseplate_number');
+        if (licenseplate === undefined) {
+            licenseplate = 'Unknown';
+        }
         lpelem.node.innerHTML = licenseplate;
 
         var mainlayer = lp.select('#main_layer');
         mainlayer.stop().animate({transform: 'T' + calcX(dx) + ',' + calcY(dy)}, 0);
         container.append(lp);
 
+        /*
         mainlayer.hover(function() {
                 var localMatrix = mainlayer.transform().localMatrix;
                 if (localMatrix.a === 1 && localMatrix.d === 1) {
@@ -91,9 +132,11 @@ function initVehicle(id, licenseplate, dx, dy) {
                     mainlayer.stop().animate({transform: transform}, 200);
                 }
             });
+        */
+
         defer.resolve(lp);
 
-        addPlateId(id);
+        addVehicleData(id, licenseplate);
         intersectAllSpaces();
     });
     return defer.promise();
@@ -113,11 +156,27 @@ function moveVehicle(id, licenseplate, dx, dy) {
     }
 }
 
+function highlightVehicle(id) {
+    var lp = Snap.select("#lp_"+id);
+    if (lp !== undefined && lp !== null) {
+        var mainlayer = lp.select('#main_layer');
+
+        var originalMatrix = mainlayer.transform().localMatrix;
+        var scaledMatrix = mainlayer.transform().localMatrix;
+        scaledMatrix.scale(2,2);
+
+        mainlayer.stop().animate({ transform: scaledMatrix }, 1000, null, function() {
+            mainlayer.stop().animate({ transform: originalMatrix }, 1000, null, function() {
+            })
+        });
+    }
+}
+
 function removeVehicle(id) {
     var lp = Snap.select("#lp_"+id);
     if (lp !== undefined && lp !== null) {
         lp.remove();
-        removePlateId(id);
+        removeVehicleData(id);
         intersectAllSpaces();
     }
 }
@@ -138,8 +197,8 @@ function intersectAllSpaces() {
         var intersect = false;
         var space = Snap.select("#Parking_space_"+spaceId);
 
-        $.each(licenseplateIds, function(j, lpId) {
-            var lp = Snap.select("#lp_"+lpId);
+        $.each(vehicleData, function(j, data) {
+            var lp = Snap.select("#lp_"+data.id);
             var result = intersectRect(space, lp);
             if (!intersect && result) {
                 intersect = true;
