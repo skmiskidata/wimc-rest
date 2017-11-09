@@ -4,6 +4,7 @@
         <meta charset="utf-8">
         <meta name="copyright" content="">
         <title>Where is my car?</title>
+        <link rel="shortcut icon" href="/favicon.ico" />
         <link href="/webjars/bootstrap/css/bootstrap.min.css" rel="stylesheet">
         <link href="/css/main.css" rel="stylesheet">
         <script src="/webjars/jquery/jquery.min.js"></script>
@@ -12,6 +13,8 @@
         <script src="/webjars/Snap.svg/0.4.1/snap.svg-min.js"></script>
         <script type="text/javascript" src="js/jquery.autocomplete.min.js"></script>
         <script src="/app.js"></script>
+
+
         <script>
             $(document).ready(function() {
                 initUI();
@@ -22,6 +25,9 @@
         <noscript>
             <h2 style="color: #ff0000">Seems your browser doesn't support Javascript! Websocket relies on Javascript being enabled. Please enable Javascript and reload this page!</h2>
         </noscript>
+        <div id="logo_container">
+            <img src="img/logo.png" alt="SKIData" />
+        </div>
         <div id="searchfield">
             <form id="search-form">
                 <input type="text" name="licenseplate" class="biginput" placeholder="Search ..." id="autocomplete">
