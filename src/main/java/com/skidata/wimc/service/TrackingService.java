@@ -29,10 +29,12 @@ public class TrackingService {
     private Map<String, String> bestPlateToUUID = new ConcurrentHashMap<>();
     private Map<String, Long> lastSeenAt = new ConcurrentHashMap<>();
 
-    private final Camera brickcom;
+    private Map<String, Camera> cameras = new ConcurrentHashMap<>();
+
     private final PositionMapper mapper;
 
     public TrackingService() {
+        // brickcom
         Set<CalibrationValues> cal = new HashSet<>();
         cal.add(new CalibrationValues(new Pixel(82, 325), new Position(300, 700), 2, 2));
         cal.add(new CalibrationValues(new Pixel(82, 364), new Position(300, 600), 2, 2));
@@ -46,8 +48,30 @@ public class TrackingService {
         cal.add(new CalibrationValues(new Pixel(1084, 325), new Position(1050, 700), 2, 2));
         cal.add(new CalibrationValues(new Pixel(1084, 385), new Position(1050, 600), 2, 2));
         cal.add(new CalibrationValues(new Pixel(1176, 471), new Position(1050, 450), 2, 2));
+        Camera newCam = new Camera("732045809", new Position(0, 0), cal);
+        cameras.put(newCam.getId(), newCam);
 
-        brickcom = new Camera("1", new Position(0, 0), cal);
+
+        // raspberry against brickcom
+        cal = new HashSet<>();
+        cal.add(new CalibrationValues(new Pixel(82, 325), new Position(300, 700), 2, 2));
+        cal.add(new CalibrationValues(new Pixel(82, 364), new Position(300, 600), 2, 2));
+        cal.add(new CalibrationValues(new Pixel(3, 424), new Position(300, 450), 2, 2));
+        cal.add(new CalibrationValues(new Pixel(346, 325), new Position(550, 700), 2, 2));
+        cal.add(new CalibrationValues(new Pixel(346, 369), new Position(550, 600), 2, 2));
+        cal.add(new CalibrationValues(new Pixel(253, 443), new Position(550, 450), 2, 2));
+        cal.add(new CalibrationValues(new Pixel(712, 325), new Position(800, 700), 2, 2));
+        cal.add(new CalibrationValues(new Pixel(712, 373), new Position(800, 600), 2, 2));
+        cal.add(new CalibrationValues(new Pixel(727, 464), new Position(800, 450), 2, 2));
+        cal.add(new CalibrationValues(new Pixel(1084, 325), new Position(1050, 700), 2, 2));
+        cal.add(new CalibrationValues(new Pixel(1084, 385), new Position(1050, 600), 2, 2));
+        cal.add(new CalibrationValues(new Pixel(1176, 471), new Position(1050, 450), 2, 2));
+
+        newCam = new Camera("732045809", new Position(0, 0), cal);
+        cameras.put(newCam.getId(), newCam);
+
+
+
         mapper = new LinearPositionMapper();
     }
 
@@ -75,10 +99,18 @@ public class TrackingService {
 
     public List<Message> mapToRealWorld(AlprResult alpr) {
         List<Message> msg = new ArrayList<>();
+        Camera camera = cameras.get(alpr.getCameraId());
+        if (camera == null) {
+            logger.warn("Camera number " + alpr.getCameraId() + " not calibrated");
+            return msg;
+        }
 
         if (alpr.getResults() != null) {
 
             for (LicencePlate lp : alpr.getResults()) {
+
+
+
                 long w = lp.getPlateCoordinates()[1].getX() - lp.getPlateCoordinates()[0].getX();
                 long h = lp.getPlateCoordinates()[2].getY() - lp.getPlateCoordinates()[1].getY();
 
@@ -94,7 +126,7 @@ public class TrackingService {
                         y = (int) (y + c.getY());
                     }
 
-                    Position pos = mapper.mapPixelToRealWorld(brickcom, new Pixel(x / 4, y / 4));
+                    Position pos = mapper.mapPixelToRealWorld(camera, new Pixel(x / 4, y / 4));
                     logger.info("lp={}, conf={}, px=({},{}) pos={}", lp.getPlate(), lp.getConfidence(), x / 4, y / 4, pos);
 
                     addMsg(msg, lp.getPlate(), pos, lp.getConfidence() >= 94);
@@ -115,7 +147,7 @@ public class TrackingService {
                     y = (int) (y + c.getY());
                 }
 
-                Position pos = mapper.mapPixelToRealWorld(brickcom, new Pixel(x / 4, y / 4));
+                Position pos = mapper.mapPixelToRealWorld(camera, new Pixel(x / 4, y / 4));
                 logger.info("lp={}, conf={}, px=({},{}) pos={}", alpr.getBestPlate().getPlate(), alpr.getBestPlate().getConfidence(), x / 4, y / 4, pos);
 
                 addMsg(msg, alpr.getBestPlate().getPlate(), pos, true);
