@@ -16,6 +16,7 @@ public class MoveVehicle extends Message {
         this.x = x;
         this.y = y;
         this.lp = lp;
+        this.color = color;
     }
 
     @JsonProperty
