@@ -15,7 +15,7 @@ function initUI() {
     function resize() {
         var newwidth = $(window).width()-20;
         var newheight = $(window).height()-80;
-        $("#carpark_container").height(newheight).width(newwidth);
+        $('#carpark_container').height(newheight).width(newwidth);
     }
     resize();
 
@@ -23,8 +23,17 @@ function initUI() {
         resize();
     });
 
-    $("#search-form").submit(function(e){
-        console.log(e);
+    $('#search-form').submit(function(e){
+        var id = null;
+        var lp = $('#autocomplete').val();
+        $.each(vehicleData, function(i, data) {
+            if (data.value.toLowerCase() === lp.toLowerCase()) {
+                id = data.id;
+            }
+        });
+        if (id !== null) {
+            highlightVehicle(id);
+        }
         return false;
     });
 

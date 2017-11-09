@@ -13,7 +13,8 @@ div#logo_container {
     position: fixed;
     top: 0px;
     left: 0px;
-    padding: 15px;
+    padding-top: 12px;
+    padding-left: 15px;
 }
 
 ::selection { background: #a4dcec; }
@@ -66,7 +67,6 @@ input, textarea {
     padding: 0;
     margin: 0;
     padding: 5px;
-    margin: 5px 0 0 0;
 }
 
 #searchfield form .biginput {
