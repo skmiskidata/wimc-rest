@@ -12,9 +12,9 @@ public class LinearPositionMapper implements PositionMapper {
     private static final Logger logger = LoggerFactory.getLogger(LinearPositionMapper.class);
 
     @Override
-    public Position mapPixelToRealWorld(Camera c, Pixel p) {
+    public Position mapPixelToRealWorld(MappingContext ctx, Pixel p) {
         Tuple<Tuple<Tuple<Integer, Position>, Tuple<Integer, Position>>,
-                Tuple<Tuple<Integer, Position>, Tuple<Integer, Position>>> ps = nearestFor(c, p);
+                Tuple<Tuple<Integer, Position>, Tuple<Integer, Position>>> ps = nearestFor(ctx.cam, p);
         int x = interpolate(ps.getV1().getV1().getV1(), ps.getV1().getV1().getV2().getX(),
                 ps.getV1().getV2().getV1(), ps.getV1().getV2().getV2().getX(), p.getX());
         int y = interpolate(ps.getV2().getV1().getV1(), ps.getV2().getV1().getV2().getY(),
@@ -54,7 +54,7 @@ public class LinearPositionMapper implements PositionMapper {
         Tuple yres = new Tuple<>(
                 new Tuple<>(Integer.MIN_VALUE, new Position(0, 0)),
                 new Tuple<>(Integer.MAX_VALUE, new Position(0, 0)));
-        for (CalibrationValues e : c.getCalibration()) {
+        for (CalibrationPixel2Pos e : c.getPixel2Pos()) {
             int ex = e.pixel.getX();
             if (ex < smallestX) {
                 smallestX = ex;
