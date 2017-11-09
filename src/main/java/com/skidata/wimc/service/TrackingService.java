@@ -37,6 +37,50 @@ public class TrackingService {
     private final PositionMapper mapper;
 
     public TrackingService() {
+        addBrickcom();
+        addRaspberryCamFenster();
+
+        /*
+        newCam = new Camera("604916464", new Position(0, 0), pixel2pos, area2Dists, 90.0);
+        cameras.put(newCam.getId(), newCam);
+
+        newCam = new Camera("899804908", new Position(0, 0), pixel2pos, area2Dists, 90.0);
+        cameras.put(newCam.getId(), newCam);
+*/
+
+        mapper = new LinearPositionMapper();
+    }
+
+    private void addRaspberryCamFenster() {
+        Set<CalibrationPixel2Pos> pixel2pos = new HashSet<>();
+        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(300, 141), new Position(1050, 900)));
+        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(697, 160), new Position(800, 900)));
+        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(1091, 201),  new Position(550, 900)));
+        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(1200, 212),new Position(490, 900)));
+
+        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(138, 72),new Position(1300, 580)));
+        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(410, 73),new Position(1050, 580)));
+        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(704,88),new Position(800, 580)));
+        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(997,117),new Position(550, 580)));
+
+        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(974, 102),new Position(550, 450)));
+        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(702, 75),new Position(800, 450)));
+        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(439, 60),new Position(1050, 450)));
+        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(190, 58),new Position(1300, 450)));
+
+        List<CalibrationLPArea2Dist> area2Dists = new ArrayList<>();
+        /*
+        area2Dists.add(new CalibrationLPArea2Dist(new Pixel(0,0), 0, 5820, 340));
+        area2Dists.add(new CalibrationLPArea2Dist(new Pixel(0,0), 0, 3810, 450));
+        area2Dists.add(new CalibrationLPArea2Dist(new Pixel(0,0),  0, 2270, 560));
+        area2Dists.add(new CalibrationLPArea2Dist(new Pixel(0,0), 0, 1310, 740));
+*/
+        Camera newCam = new Camera("2103694419", new Position(790, 100), pixel2pos, area2Dists, 90.0); //brickcom
+        cameras.put(newCam.getId(), newCam);
+
+    }
+
+    private void addBrickcom() {
         Set<CalibrationPixel2Pos> pixel2pos = new HashSet<>();
         pixel2pos.add(new CalibrationPixel2Pos(new Pixel(82, 325), new Position(300, 700)));
         pixel2pos.add(new CalibrationPixel2Pos(new Pixel(82, 364), new Position(300, 600)));
@@ -59,18 +103,6 @@ public class TrackingService {
 
         Camera newCam = new Camera("732045809", new Position(790, 100), pixel2pos, area2Dists, 90.0); //brickcom
         cameras.put(newCam.getId(), newCam);
-
-        newCam = new Camera("2103694419", new Position(0, 0), pixel2pos, area2Dists, 90.0);
-        cameras.put(newCam.getId(), newCam);
-
-        newCam = new Camera("604916464", new Position(0, 0), pixel2pos, area2Dists, 90.0);
-        cameras.put(newCam.getId(), newCam);
-
-        newCam = new Camera("899804908", new Position(0, 0), pixel2pos, area2Dists, 90.0);
-        cameras.put(newCam.getId(), newCam);
-
-
-        mapper = new LinearPositionMapper();
     }
 
     @GetMapping("/carpark")
@@ -131,20 +163,10 @@ public class TrackingService {
                 long h1 = Math.abs(lp.getPlateCoordinates()[2].getY() - lp.getPlateCoordinates()[1].getY());
                 long h2 = Math.abs(lp.getPlateCoordinates()[3].getY() - lp.getPlateCoordinates()[0].getY());
 
-                //logger.info("lp={}, conf={}, lpw={}, lph={}, lparea={}", lp.getPlate(), lp.getConfidence(), w, h, w*h);
-                if (lp.getConfidence() >= 95 || (bestPlateToUUID.get(lp.getPlate()) != null)) {
-
-                    //lastSeenAt.put(lp.getPlate(), System.currentTimeMillis());
-
-                    int x = 0;
-                    int y = 0;
-                    for (PlateCoordinate c : lp.getPlateCoordinates()) {
-                        x = (int) (x + c.getX());
-                        y = (int) (y + c.getY());
-                    }
-
-                    Position pos = mapper.mapPixelToRealWorld(new MappingContext(camera, w, h1, h2, lp.getPlate()), new Pixel(x / 4, y / 4));
-                    logger.info("lp={}, conf={}, px=({},{}) pos={}", lp.getPlate(), lp.getConfidence(), x / 4, y / 4, pos);
+                if (lp.getConfidence() >= 90 || (bestPlateToUUID.get(lp.getPlate()) != null)) {
+                    Pixel pix = getPixel(lp.getPlateCoordinates());
+                    Position pos = mapper.mapPixelToRealWorld(new MappingContext(camera, w, h1, h2, lp.getPlate()), pix);
+                    logger.info("lp={}, conf={}, px=({},{}) pos={} camera={}", lp.getPlate(), lp.getConfidence(), pix.getX(), pix.getY(), pos, camera.getId());
 
                     addMsg(msg, lp.getPlate(), pos, lp.getConfidence() >= 94, camera.getId());
                 }
@@ -161,7 +183,6 @@ public class TrackingService {
                 long h1 = Math.abs(lp.getPlateCoordinates()[2].getY() - lp.getPlateCoordinates()[1].getY());
                 long h2 = Math.abs(lp.getPlateCoordinates()[3].getY() - lp.getPlateCoordinates()[0].getY());
 
-                // lastSeenAt.put(alpr.getBestPlate().getPlate(), System.currentTimeMillis());
 
                 int x = 0;
                 int y = 0;
@@ -170,6 +191,7 @@ public class TrackingService {
                     y = (int) (y + c.getY());
                 }
 
+                Pixel pix = getPixel(lp.getPlateCoordinates());
                 Position pos = mapper.mapPixelToRealWorld(new MappingContext(camera, w, h1, h2, lp.getPlate()), new Pixel(x / 4, y / 4));
                 logger.info("lp={}, conf={}, px=({},{}) pos={}", alpr.getBestPlate().getPlate(), alpr.getBestPlate().getConfidence(), x / 4, y / 4, pos);
 
@@ -178,6 +200,16 @@ public class TrackingService {
         }
 
         return msg;
+    }
+
+    private Pixel getPixel(PlateCoordinate[] plateCoordinates) {
+        int x = 0;
+        int y = 0;
+        for (PlateCoordinate c : plateCoordinates) {
+            x = (int) (x + c.getX());
+            y = (int) (y + c.getY());
+        }
+        return new Pixel(x/4, y/4);
     }
 
     private void addMsg(List<Message> msg, String plate, Position newPos, boolean bestPlate, String cameraId) {
