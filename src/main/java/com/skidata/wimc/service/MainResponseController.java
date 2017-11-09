@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -34,6 +35,7 @@ public class MainResponseController {
         this.template = template;
         dummyDataThread = new Thread(new Runnable() {
             private DummyCarDataGenerator gen = new DummyCarDataGenerator();
+
             @Override
             public void run() {
                 while (true) {
@@ -58,19 +60,49 @@ public class MainResponseController {
 
     @PostMapping(path = "/postAll", consumes = "application/json", produces = "application/json")
     public void postAll(@RequestBody AlprResult result) {
-        StringBuffer sb = new StringBuffer();
-        for (LicencePlate licencePlate : result.getResults()) {
-            sb.append(" LP: ").append(licencePlate.getPlate()).append(" XY: ");
-            toString(sb, licencePlate.getPlateCoordinates());
-        }
-        logger.info("in camId=" + result.getCameraId() + " result = " + sb.toString());
+        logger.info("Got Result: \n" + result);
+        if (result != null) {
+            if (result.getDataType().equalsIgnoreCase("heartbeat")) {
+                logger.info("Got heartbeat: " + result);
+            }
+            if (result.getDataType().equalsIgnoreCase("alpr_results")) {
+                StringBuffer sb = new StringBuffer();
+                if (result.getResults() != null) {
+                    for (LicencePlate licencePlate : result.getResults()) {
+                        sb.append(" LP: ").append(licencePlate.getPlate()).append(" XY: ");
+                        toString(sb, licencePlate.getPlateCoordinates());
+                    }
+                    logger.info("in camId=" + result.getCameraId() + " result = " + sb.toString());
 
-        List<Message> msgs = trackingService.mapToRealWorld(result);
+                    List<Message> msgs = trackingService.mapToRealWorld(result);
+                    for (Message m : msgs) {
+                        logger.info("Sending {}", m);
+                        template.convertAndSend("/topic/track", m);
+                    }
+                }
+            }
+            if (result.getDataType().equalsIgnoreCase("alpr_group")) {
+                List<Message> msgs = trackingService.mapToRealWorld(result);
+                for (Message m : msgs) {
+                    logger.info("Sending {}", m);
+                    template.convertAndSend("/topic/track", m);
+                }
+            }
+        } else {
+            logger.warn("NULL RESULT!");
+        }
+    }
+
+
+    @Scheduled(fixedDelay = 3000)
+    public void checkForMissingLicencePlates() {
+        logger.info("Checking for vanished");
+        List<Message> msgs = trackingService.checkForVanished();
+        logger.info("removing " + msgs.size() + " cars");
         for (Message m : msgs) {
-            logger.info("Sending {}", m);
+            logger.info("Sending car removal {}", m);
             template.convertAndSend("/topic/track", m);
         }
-
     }
 
     public void sendOut(CarPosition carPosition) {

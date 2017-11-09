@@ -34,6 +34,24 @@ public class LicencePlate {
     @JsonProperty("coordinates")
     private PlateCoordinate[] plateCoordinates;
 
+    @JsonProperty("vehicle_region")
+    private VehicleRegion vehicleRegion;
+
+    @JsonProperty("best_confidence")
+    private Float bestConfidence;
+
+    @JsonProperty("best_uuid")
+    private String bestUuid;
+
+    @JsonProperty("best_plate_number")
+    private String bestPlateNumber;
+
+    @JsonProperty("best_region")
+    private String bestRegion;
+
+    @JsonProperty("best_region_confidence")
+    private Float bestRegionConfidence;
+
 
     public String getPlate() {
         return plate;
