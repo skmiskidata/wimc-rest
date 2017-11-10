@@ -28,7 +28,7 @@ public class TrackingService {
 
     private static final int DISTANCE_TO_CONSIDER = 150;
 
-    private static final int DISTANCE_TO_MOVE = 15;
+    private static final int DISTANCE_TO_MOVE = 0;
 
     private static final Logger logger = LoggerFactory.getLogger(MainResponseController.class);
 
@@ -148,7 +148,7 @@ public class TrackingService {
                 if (newBestPosition == null) {
                     platesToRemove.add(uniqueCar);
                     msg.add(new RemoveVehicle(uniqueCar.getUuid()));
-                } else if (!oldBestPosition.equals(newBestPosition) && (distance(oldBestPosition, newBestPosition) > DISTANCE_TO_MOVE)) {
+                } else if (!oldBestPosition.equals(newBestPosition)) {
                     uniqueCar.setBestPosition(newBestPosition);
                     msg.add(new MoveVehicle(uniqueCar.getUuid(), newBestPosition.getX(), newBestPosition.getY(), uniqueCar.getPlate(), uniqueCar.getBestColor()));
                 }
@@ -319,7 +319,7 @@ public class TrackingService {
             int size = uniqueCar.getPositionPerCamera().values().size();
             Position newBestPosition = calculateCentroid(uniqueCar.getPositionPerCamera().values().toArray(new Position[size]));
 
-            if (!oldBestPosition.equals(newBestPosition) && (distance(oldBestPosition, newBestPosition) > DISTANCE_TO_MOVE)) {
+            if (!oldBestPosition.equals(newBestPosition)) {
                 uniqueCar.setBestPosition(newBestPosition);
                 logger.info("ADDMSG: moving vehicle with new best positition. LP: " + plate);
                 msg.add(new MoveVehicle(uniqueCar.getUuid(), newBestPosition.getX(), newBestPosition.getY(), plate, uniqueCar.getBestColor()));
