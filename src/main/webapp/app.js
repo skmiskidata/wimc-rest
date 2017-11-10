@@ -236,7 +236,8 @@ function intersectAllSpaces() {
 
         $.each(vehicleData, function(j, data) {
             var lp = Snap.select("#lp_"+data.id);
-            var result = intersectRect(space, lp);
+            var number = lp.select('#licenseplate_number');
+            var result = intersectRect(space, number);
             if (!intersect && result) {
                 intersect = true;
             }
