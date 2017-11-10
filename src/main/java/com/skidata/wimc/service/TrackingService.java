@@ -46,19 +46,20 @@ public class TrackingService {
 
     private void addRaspCam2() {
         Set<CalibrationPixel2Pos> pixel2pos = new HashSet<>();
-        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(1055, 573), new Position(450, 80)));
-        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(750, 573), new Position(450, 260)));
-        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(476, 573), new Position(450, 450)));
-//        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(417, 492), new Position(550, 580)));
-//        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(532, 504), new Position(550, 450)));
-        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(988, 421), new Position(810, 80)));
-        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(824, 421), new Position(810, 260)));
-        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(648, 421), new Position(810, 450)));
+        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(1055, 573), new Position(430, 80)));
+        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(750, 573), new Position(430, 200)));
+        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(476, 573), new Position(430, 340)));
+        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(1010, 500), new Position(530, 80)));
+        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(780, 500), new Position(530, 200)));
+        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(550, 500), new Position(530, 340)));
+        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(988, 421), new Position(760, 80)));
+        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(824, 421), new Position(760, 200)));
+        pixel2pos.add(new CalibrationPixel2Pos(new Pixel(648, 421), new Position(760, 340)));
 
 
         List<CalibrationLPArea2Dist> area2Dists = new ArrayList<>();
 //        Camera newCam = new Camera("899804908", new Position(300, 160), pixel2pos, area2Dists, 180.0/Math.PI*(+75.0));
-        Camera newCam = new Camera("899804908", new Position(0,0), pixel2pos, area2Dists, 180.0/Math.PI*15.0);
+        Camera newCam = new Camera("899804908", new Position(0,0), pixel2pos, area2Dists, Math.PI/180.0*15.0);
         cameras.put(newCam.getId(), newCam);
     }
 
