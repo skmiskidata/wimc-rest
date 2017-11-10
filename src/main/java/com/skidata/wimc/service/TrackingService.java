@@ -58,7 +58,7 @@ public class TrackingService {
 
         List<CalibrationLPArea2Dist> area2Dists = new ArrayList<>();
 //        Camera newCam = new Camera("899804908", new Position(300, 160), pixel2pos, area2Dists, 180.0/Math.PI*(+75.0));
-        Camera newCam = new Camera("899804908", new Position(0,0), pixel2pos, area2Dists, 180.0/Math.PI*+75.0);
+        Camera newCam = new Camera("899804908", new Position(0,0), pixel2pos, area2Dists, 180.0/Math.PI*15.0);
         cameras.put(newCam.getId(), newCam);
     }
 
@@ -82,7 +82,7 @@ public class TrackingService {
         List<CalibrationLPArea2Dist> area2Dists = new ArrayList<>();
 
        // Camera newCam = new Camera("2103694419", new Position(790, 1450), pixel2pos, area2Dists, 180.0);
-        Camera newCam = new Camera("2103694419", new Position(790, 0), pixel2pos, area2Dists, 0.0);
+        Camera newCam = new Camera("2103694419", new Position(0, 0), pixel2pos, area2Dists, 0.0);
         cameras.put(newCam.getId(), newCam);
 
     }
@@ -109,7 +109,7 @@ public class TrackingService {
 //        area2Dists.add(new CalibrationLPArea2Dist(new Pixel(0, 0), 0, 1310, 740));
 
 //        Camera newCam = new Camera("732045809", new Position(790, 100), pixel2pos, area2Dists, 0.0); //brickcom
-        Camera newCam = new Camera("732045809", new Position(790, 0), pixel2pos, area2Dists, 0.0); //brickcom
+        Camera newCam = new Camera("732045809", new Position(0, 0), pixel2pos, area2Dists, 0.0); //brickcom
         cameras.put(newCam.getId(), newCam);
 
 

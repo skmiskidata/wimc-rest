@@ -7,22 +7,24 @@ import com.skidata.wimc.tracking.PositionMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.*;
+
 public class LinearPositionMapper implements PositionMapper {
 
     private static final Logger logger = LoggerFactory.getLogger(LinearPositionMapper.class);
 
     @Override
     public Position mapPixelToRealWorld(MappingContext ctx, Pixel p) {
-        Tuple<Tuple<Tuple<Integer, Position>, Tuple<Integer, Position>>,
-                Tuple<Tuple<Integer, Position>, Tuple<Integer, Position>>> ps = nearestFor(ctx.cam, p);
-        int pxx1 =  ps.getV1().getV1().getV1();
-        int pox1 =  ps.getV1().getV1().getV2().getX();
-        int pxx2 =  ps.getV1().getV2().getV1();
-        int pox2 =  ps.getV1().getV2().getV2().getX();
-        int pxy1 =  ps.getV2().getV1().getV1();
-        int poy1 =  ps.getV2().getV1().getV2().getY();
-        int pxy2 =  ps.getV2().getV2().getV1();
-        int poy2 =  ps.getV2().getV2().getV2().getY();
+        List<Tuple<Double, CalibrationPixel2Pos>> d2p = nearestFor(ctx.cam, p);
+
+        int pxx1 = d2p.get(0).getV2().pixel.getX();
+        int pox1 = d2p.get(0).getV2().pos.getX();
+        int pxx2 = d2p.get(1).getV2().pixel.getX();
+        int pox2 = d2p.get(1).getV2().pos.getX();
+        int pxy1 = d2p.get(0).getV2().pixel.getY();
+        int poy1 = d2p.get(0).getV2().pos.getY();
+        int pxy2 = d2p.get(1).getV2().pixel.getY();
+        int poy2 = d2p.get(1).getV2().pos.getY();
 
         Position p1 = moveAndRotate(ctx, new Position(pox1, poy1));
         Position p2 = moveAndRotate(ctx, new Position(pox2, poy2));
@@ -59,88 +61,27 @@ public class LinearPositionMapper implements PositionMapper {
         return (int) Math.round(pos1 + posd*((px - px1) / pxd))-camOffset;
     }
 
-    private Tuple<Tuple<Tuple<Integer,Position>, Tuple<Integer,Position>>,
-            Tuple<Tuple<Integer,Position>, Tuple<Integer,Position>>> nearestFor(Camera c, Pixel p) {
-        int bestX1 = Integer.MIN_VALUE;
-        int bestX2 = Integer.MAX_VALUE;
-        int bestY1 = Integer.MIN_VALUE;
-        int bestY2 = Integer.MAX_VALUE;
-        int smallestX = Integer.MAX_VALUE;
-        int smallestY = Integer.MAX_VALUE;
-        int biggestX = Integer.MIN_VALUE;
-        int biggestY = Integer.MIN_VALUE;
-        Position smallestXPos = null;
-        Position smallestYPos = null;
-        Position biggestXPos = null;
-        Position biggestYPos = null;
+    private List<Tuple<Double, CalibrationPixel2Pos>> nearestFor(Camera c, Pixel p) {
+        List<Tuple<Double, CalibrationPixel2Pos>> d2p = new ArrayList<>();
 
-        Tuple xres = new Tuple<>(
-                new Tuple<>(Integer.MIN_VALUE, new Position(0, 0)),
-                new Tuple<>(Integer.MAX_VALUE, new Position(0, 0)));
-        Tuple yres = new Tuple<>(
-                new Tuple<>(Integer.MIN_VALUE, new Position(0, 0)),
-                new Tuple<>(Integer.MAX_VALUE, new Position(0, 0)));
         for (CalibrationPixel2Pos e : c.getPixel2Pos()) {
-            int ex = e.pixel.getX();
-            if (ex < smallestX) {
-                smallestX = ex;
-                smallestXPos = e.pos;
-            }
-            if (biggestX < ex) {
-                biggestX = ex;
-                biggestXPos = e.pos;
-            }
-            if (ex <= p.getX() && bestX1 < ex ) {
-                bestX1 = ex;
-                ((Tuple<Integer, Position>)xres.getV1()).setV1(bestX1);
-                ((Tuple<Integer, Position>)xres.getV1()).setV2(e.pos);
-            }
-            if (p.getX() <= ex &&  ex < bestX2) {
-                bestX2 = ex;
-                ((Tuple<Integer, Position>)xres.getV2()).setV1(bestX2);
-                ((Tuple<Integer, Position>)xres.getV2()).setV2(e.pos);
-            }
-
-            int ey = e.pixel.getY();
-            if (ey < smallestY) {
-                smallestY = ey;
-                smallestYPos = e.pos;
-            }
-            if (biggestY < ey) {
-                biggestY = ey;
-                biggestYPos = e.pos;
-            }
-            if (ey <= p.getY() && bestY1 < ey ) {
-                bestY1 = ey;
-                ((Tuple<Integer, Position>)yres.getV1()).setV1(bestY1);
-                ((Tuple<Integer, Position>)yres.getV1()).setV2(e.pos);
-            }
-            if (p.getY() <= ey &&  ey < bestY2) {
-                bestY2 = ey;
-                ((Tuple<Integer, Position>)yres.getV2()).setV1(bestY2);
-                ((Tuple<Integer, Position>)yres.getV2()).setV2(e.pos);
-            }
+            double d = dist(e.pixel, p);
+            d2p.add(new Tuple<>(d, e));
         }
 
-        if (((Tuple<Integer, Position>)xres.getV2()).getV1() == Integer.MAX_VALUE) {
-            xres.setV2(xres.getV1());
-            xres.setV1(new Tuple<Integer, Position>(smallestX, smallestXPos));
-        }
-        if (((Tuple<Integer, Position>)xres.getV1()).getV1() == Integer.MIN_VALUE) {
-            xres.setV1(xres.getV2());
-            xres.setV2(new Tuple<Integer, Position>(biggestX, biggestXPos));
-        }
-        if (((Tuple<Integer, Position>)yres.getV2()).getV1() == Integer.MAX_VALUE) {
-            yres.setV2(yres.getV1());
-            yres.setV1(new Tuple<Integer, Position>(smallestY, smallestYPos));
-        }
-        if (((Tuple<Integer, Position>)yres.getV1()).getV1() == Integer.MIN_VALUE) {
-            yres.setV1(yres.getV2());
-            yres.setV2(new Tuple<Integer, Position>(biggestY, biggestYPos));
-        }
+        Collections.sort(d2p, new Comparator<Tuple<Double, CalibrationPixel2Pos>>() {
+            @Override
+            public int compare(Tuple<Double, CalibrationPixel2Pos> o1, Tuple<Double, CalibrationPixel2Pos> o2) {
+                return o1.getV1().compareTo(o2.getV1());
+            }
+        });
 
-//        logger.info("returning xres {}", xres);
-//        logger.info("returning yres {}", yres);
-        return new Tuple<>(xres, yres);
+        return d2p;
+    }
+
+    private double dist(Pixel p1, Pixel p2) {
+        double xd = p1.getX() - p2.getX();
+        double yd = p1.getY() - p2.getY();
+        return Math.sqrt(xd*xd+yd*yd);
     }
 }
