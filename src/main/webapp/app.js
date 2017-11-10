@@ -2,7 +2,7 @@ var VIEWBOX_X = 3840;
 var VIEWBOX_Y = 2160;
 var SAMPLE_X = 1600;
 var SAMPLE_Y = 900;
-var OFFSET_X = 180;
+var OFFSET_X = 190;
 
 var vehicleData = [];
 var stompClient = null;
