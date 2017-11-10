@@ -28,12 +28,11 @@ public class TrackingService {
 
     private static final int DISTANCE_TO_CONSIDER = 150;
 
+    private static final int DISTANCE_TO_MOVE = 15;
+
     private static final Logger logger = LoggerFactory.getLogger(MainResponseController.class);
 
     private static final Map<String, Camera> cameras = new ConcurrentHashMap<>();
-
-    //private static final Map<String, UniqueCar> uniqueCars = new HashMap<>();
-    //private static final Map<String, UniqueCar> uniqueCarsPerPlate = new HashMap<>();
 
     private final PositionMapper mapper;
 
@@ -149,7 +148,7 @@ public class TrackingService {
                 if (newBestPosition == null) {
                     platesToRemove.add(uniqueCar);
                     msg.add(new RemoveVehicle(uniqueCar.getUuid()));
-                } else if (!oldBestPosition.equals(newBestPosition)) {
+                } else if (!oldBestPosition.equals(newBestPosition) && (distance(oldBestPosition, newBestPosition) > DISTANCE_TO_MOVE)) {
                     uniqueCar.setBestPosition(newBestPosition);
                     msg.add(new MoveVehicle(uniqueCar.getUuid(), newBestPosition.getX(), newBestPosition.getY(), uniqueCar.getPlate(), uniqueCar.getBestColor()));
                 }
@@ -304,6 +303,7 @@ public class TrackingService {
             uniqueCar.setBestColor(color);
             uniqueCar.setBestColorConfidence(colorConfidence == null ? 0f : colorConfidence);
 
+            // we should never add the same licence plate twice... however it happens for some reason
             SingletonDB.getInstance().getUniqueCars().add(uniqueCar);
 
             logger.info("ADDMSG: new unique car created " + uniqueCar.getUuid() + " LP: " + plate);
@@ -319,9 +319,9 @@ public class TrackingService {
             int size = uniqueCar.getPositionPerCamera().values().size();
             Position newBestPosition = calculateCentroid(uniqueCar.getPositionPerCamera().values().toArray(new Position[size]));
 
-            if (!oldBestPosition.equals(newBestPosition)) {
+            if (!oldBestPosition.equals(newBestPosition) && (distance(oldBestPosition, newBestPosition) > DISTANCE_TO_MOVE)) {
                 uniqueCar.setBestPosition(newBestPosition);
-                logger.info("ADDMSG: moving vehicle with new best postition. LP: " + plate);
+                logger.info("ADDMSG: moving vehicle with new best positition. LP: " + plate);
                 msg.add(new MoveVehicle(uniqueCar.getUuid(), newBestPosition.getX(), newBestPosition.getY(), plate, uniqueCar.getBestColor()));
             }
 
