@@ -68,19 +68,16 @@ public class LinearPositionMapperTest {
         Assert.assertEquals(new Position(-10, -50), out);
     }
 
-    @Test
     public void testMap5() {
         Position out = mapper.mapPixelToRealWorld(ctx2, new Pixel(1055, 573));
         Assert.assertEquals(new Position(450, 80), out);
     }
 
-    @Test
     public void testMap6() {
         Position out = mapper.mapPixelToRealWorld(ctx2, new Pixel(927, 573));
         Assert.assertEquals(new Position(450, 170), out);
     }
 
-    @Test
     public void testMap7() {
         Position out = mapper.mapPixelToRealWorld(ctx2, new Pixel(824, 421));
         Assert.assertEquals(new Position(810, 260), out);

@@ -26,7 +26,7 @@ public class TrackingService {
 
     private static final int REAL_TIME_BEST_CONFIDENCE = 94;
 
-    private static final int DISTANCE_TO_CONSIDER = 150;
+    private static final int DISTANCE_TO_CONSIDER = 100;
 
     private static final int DISTANCE_TO_MOVE = 0;
 
